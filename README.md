@@ -150,49 +150,46 @@
 
 ## 🛠️ Project Structure
 MSC_THESIS_PROJECT/
-│
-├── core/ # Main Django application
-│ ├── models.py # Database models (Scenario, Simulation, Vehicle)
-│ ├── views.py # Business logic and controllers
-│ ├── forms.py # Django forms
-│ ├── admin.py # Admin interface configuration
-│ ├── urls.py # URL routing
-│ ├── templates/core/ # HTML templates
-│ │ ├── dashboard.html # Main dashboard
-│ │ ├── comparison_detail.html # Algorithm comparison
-│ │ ├── scenario_list.html # Scenario management
-│ │ ├── results.html # Results visualization
-│ │ ├── ai_experiment.html # AI experiment interface
-│ │ ├── simulation_detail.html # Simulation details
-│ │ └── base.html # Base template
-│ ├── static/core/ # Static assets (CSS, JS, images)
-│ ├── management/commands/ # Custom management commands
-│ │ └── seed_simulations.py # Database seeding utility
-│ └── migrations/ # Database migrations
-│ ├── 0001_initial.py
-│ ├── 0002_alter_scenario_parameters_and_more.py
-│ └── init.py
-│
-├── thesis/ # Django project configuration
-│ ├── init.py
-│ ├── settings.py # Project settings
-│ ├── urls.py # Root URL configuration
-│ ├── wsgi.py # WSGI application
-│ └── asgi.py # ASGI application
-│
-├── Propoal_Documentation/ # Research documents
-│ ├── ELISHA_Concept-Note.pdf # Initial concept note
-│ └── ELISHA_Research_Proposal.pdf # Full research proposal
-│
-├── requirements.txt # Python dependencies
-├── manage.py # Django management script  
-├── render.yaml # Deployment configuration
-├── runtime.txt # Python version specification
-├── .gitignore # Git ignore patterns
-└── README.md # This document
+├── core/                          # Main Django app
+│   ├── migrations/
+│   │   ├── __init__.py
+│   │   ├── 0001_initial.py
+│   │   └── 0002_alter_scenario_parameters.py
+│   ├── templates/core/
+│   │   ├── base.html
+│   │   ├── dashboard.html
+│   │   ├── comparison_detail.html
+│   │   └── ...
+│   ├── static/core/
+│   │   ├── css/
+│   │   ├── js/
+│   │   └── images/
+│   ├── management/commands/
+│   │   └── seed_simulations.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── thesis/                        # Django project config
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+├── Proposal_Documentation/        # Optional: research docs
+│   ├── ELISHA_Concept_Note.pdf
+│   └── ELISHA_Research_Proposal.pdf
+├── requirements.txt
+├── manage.py                      # Essential Django file
+├── README.md                      # Project documentation
+└── .gitignore                     # Git ignore file document
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started  
 
 ### **Prerequisites**
 - Python 3.8+
