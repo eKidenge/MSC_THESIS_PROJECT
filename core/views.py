@@ -449,12 +449,49 @@ def scenario_list_view(request):
             'completed_simulations': completed_count,
         })
     
+    # Calculate totals
+    total_scenarios = scenarios.count()
+    active_scenarios = scenarios.filter(is_active=True).count()
+    
+    # Count unique city locations from scenario types
+    city_locations = scenarios.values_list('scenario_type', flat=True).distinct().count()
+    
     context = {
         'title': 'Available Scenarios',
         'project_name': 'MATAFITI Traffic AI',
         'scenario_stats': scenario_stats,
+        'total_scenarios': total_scenarios,
+        'active_scenarios': active_scenarios,
+        'city_locations': city_locations,
+        'scenarios': scenarios,  # Also pass the queryset directly if needed
     }
     return render(request, 'core/scenario_list.html', context)
+
+# JUST ADDED TO EDIT SCENERIOS
+@login_required
+def edit_scenario_view(request, scenario_id):
+    """Edit an existing scenario"""
+    scenario = get_object_or_404(Scenario, id=scenario_id)
+    
+    if request.method == 'POST':
+        form = ScenarioForm(request.POST, instance=scenario)
+        if form.is_valid():
+            edited_scenario = form.save(commit=False)
+            edited_scenario.updated_at = timezone.now()
+            edited_scenario.save()
+            messages.success(request, f"Scenario '{edited_scenario.name}' updated successfully!")
+            return redirect('scenario_list')
+    else:
+        form = ScenarioForm(instance=scenario)
+    
+    context = {
+        'title': f'Edit Scenario: {scenario.name}',
+		'project_name': 'MATAFITI Traffic AI',
+        'form': form,
+        'scenario': scenario,
+        'action': 'Edit',  # This can be used in the template to show "Edit" instead of "Create"
+    }
+    return render(request, 'core/create_scenario.html', context)
 
 def comparison_view(request):
     """Compare different simulations"""
