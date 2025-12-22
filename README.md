@@ -579,8 +579,6 @@ MSC_THESIS_PROJECT/
 - Operating System: Windows 10+, macOS 10.15+, Ubuntu 20.04+
 
 ### 8.2 Installation Steps
-
-```bash
 # 1. Clone the repository
 git clone https://github.com/eKidenge/MSC_THESIS_PROJECT.git
 cd MSC_THESIS_PROJECT
