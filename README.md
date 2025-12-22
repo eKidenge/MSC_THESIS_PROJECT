@@ -149,7 +149,7 @@
 ---
 
 ## 🛠️ Project Structure
-MSC_THESIS_PROJECT/  
+MSC_THESIS_PROJECT/
 │
 ├── core/ # Main Django application
 │ ├── models.py # Database models (Scenario, Simulation, Vehicle)
@@ -161,13 +161,20 @@ MSC_THESIS_PROJECT/
 │ │ ├── dashboard.html # Main dashboard
 │ │ ├── comparison_detail.html # Algorithm comparison
 │ │ ├── scenario_list.html # Scenario management
-│ │ └── results.html # Results visualization
-│ ├── static/core/ # Static assets
+│ │ ├── results.html # Results visualization
+│ │ ├── ai_experiment.html # AI experiment interface
+│ │ ├── simulation_detail.html # Simulation details
+│ │ └── base.html # Base template
+│ ├── static/core/ # Static assets (CSS, JS, images)
 │ ├── management/commands/ # Custom management commands
 │ │ └── seed_simulations.py # Database seeding utility
 │ └── migrations/ # Database migrations
+│ ├── 0001_initial.py
+│ ├── 0002_alter_scenario_parameters_and_more.py
+│ └── init.py
 │
 ├── thesis/ # Django project configuration
+│ ├── init.py
 │ ├── settings.py # Project settings
 │ ├── urls.py # Root URL configuration
 │ ├── wsgi.py # WSGI application
@@ -175,17 +182,14 @@ MSC_THESIS_PROJECT/
 │
 ├── Propoal_Documentation/ # Research documents
 │ ├── ELISHA_Concept-Note.pdf # Initial concept note
-│ ├── ELISHA_Research_Proposal.pdf # Full research proposal
-│ └── Ethical_Clearance.pdf # Ethical approval document
+│ └── ELISHA_Research_Proposal.pdf # Full research proposal
 │
 ├── requirements.txt # Python dependencies
-├── manage.py # Django management script
+├── manage.py # Django management script  
 ├── render.yaml # Deployment configuration
 ├── runtime.txt # Python version specification
 ├── .gitignore # Git ignore patterns
-└── README.md # This document  
-
-
+└── README.md # This document
 ---
 
 ## 🚀 Getting Started
