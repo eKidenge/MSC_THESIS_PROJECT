@@ -22,7 +22,8 @@ urlpatterns = [
     
     # Scenario management
     path('scenarios/', views.scenario_list_view, name='scenario_list'),
-    path('scenarios/create/', views.create_scenario_view, name='create_scenario'),
+    path('scenarios/create/', views.create_scenario_view, name = 'create_scenario'),
+    path('scenarios/<int:scenario_id>/edit/', views.edit_scenario_view, name='edit_scenario'),
     
     # Comparison
     path('compare/', views.comparison_view, name='comparison'),

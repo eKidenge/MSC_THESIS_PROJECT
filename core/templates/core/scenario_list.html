@@ -60,19 +60,25 @@
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-3">
-                        <h3 class="mb-1 text-primary">{{ scenarios|length }}</h3>
+                        <h3 class="mb-1 text-primary">{{ total_scenarios|default:"0" }}</h3>
                         <p class="mb-0 text-muted">TOTAL SCENARIOS</p>
                     </div>
                     <div class="col-md-3">
-                        <h3 class="mb-1 text-success">{{ scenarios|length }}</h3>
+                        <h3 class="mb-1 text-success">{{ active_scenarios|default:"0" }}</h3>
                         <p class="mb-0 text-muted">ACTIVE SCENARIOS</p>
                     </div>
                     <div class="col-md-3">
-                        <h3 class="mb-1 text-warning">4</h3>
+                        <h3 class="mb-1 text-warning">{{ city_locations|default:"4" }}</h3>
                         <p class="mb-0 text-muted">CITY LOCATIONS</p>
                     </div>
                     <div class="col-md-3">
-                        <h3 class="mb-1 text-info">12.5</h3>
+                        {% if scenario_stats %}
+                            {% with scenario_stats|first as first_stat %}
+                                <h3 class="mb-1 text-info">{{ first_stat.total_simulations|default:"0" }}</h3>
+                            {% endwith %}
+                        {% else %}
+                            <h3 class="mb-1 text-info">0</h3>
+                        {% endif %}
                         <p class="mb-0 text-muted">AVG SIMULATIONS</p>
                     </div>
                 </div>
@@ -101,8 +107,9 @@
 
         <!-- Scenarios Grid -->
         <div class="row">
-            {% if scenarios %}
-                {% for scenario in scenarios %}
+            {% if scenario_stats %}
+                {% for stat in scenario_stats %}
+                {% with scenario=stat.scenario %}
                 <div class="col-lg-6 mb-4">
                     <div class="card scenario-card h-100">
                         <div class="card-header scenario-card-header">
@@ -147,7 +154,15 @@
                                             <small class="text-muted">Duration</small>
                                             <div class="parameter-value">
                                                 <i class="fas fa-clock"></i> 
-                                                {{ scenario.parameters.duration|default:"3600"|divisibleby:3600|yesno:"1 hour,Other" }}
+                                                {% if scenario.parameters.duration %}
+                                                    {% if scenario.parameters.duration >= 3600 %}
+                                                        {{ scenario.parameters.duration|floatformat:"0" }} seconds ({{ scenario.parameters.duration|divisibleby:3600|floatformat:"1" }} hours)
+                                                    {% else %}
+                                                        {{ scenario.parameters.duration|floatformat:"0" }} seconds
+                                                    {% endif %}
+                                                {% else %}
+                                                    3600 seconds (1 hour)
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -174,7 +189,36 @@
                                             <small class="text-muted">Peak Hour</small>
                                             <div class="parameter-value">
                                                 <i class="fas fa-traffic-light"></i> 
-                                                {{ scenario.parameters.peak_hour|default:false|yesno:"Yes,No" }}
+                                                {% if scenario.parameters.peak_hour == True or scenario.parameters.peak_hour == "true" %}
+                                                    Yes
+                                                {% else %}
+                                                    No
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Simulation Statistics -->
+                            <div class="scenario-stats mb-4">
+                                <h6 class="section-title mb-3">
+                                    <i class="fas fa-chart-bar"></i> SIMULATION STATISTICS
+                                </h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="stat-item">
+                                            <small class="text-muted">Total Simulations</small>
+                                            <div class="stat-value text-primary">
+                                                <i class="fas fa-play-circle"></i> {{ stat.total_simulations }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="stat-item">
+                                            <small class="text-muted">Completed</small>
+                                            <div class="stat-value text-success">
+                                                <i class="fas fa-check-circle"></i> {{ stat.completed_simulations }}
                                             </div>
                                         </div>
                                     </div>
@@ -191,7 +235,11 @@
                                 </button>
                                 <div class="collapse mt-3" id="advancedParams{{ scenario.id }}">
                                     <div class="advanced-params">
-                                        <pre class="bg-dark text-light p-3 rounded">{{ scenario.parameters|pprint }}</pre>
+                                        {% if scenario.parameters %}
+                                            <pre class="bg-dark text-light p-3 rounded">{{ scenario.parameters|pprint }}</pre>
+                                        {% else %}
+                                            <pre class="bg-dark text-light p-3 rounded">No advanced parameters set</pre>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -209,7 +257,7 @@
                                     </div>
                                     <div class="usage-stats">
                                         <small class="text-muted">
-                                            <i class="fas fa-chart-line"></i> Used in 12 simulations
+                                            <i class="fas fa-chart-line"></i> Used in {{ stat.total_simulations }} simulation{{ stat.total_simulations|pluralize }}
                                         </small>
                                     </div>
                                 </div>
@@ -226,7 +274,7 @@
                                         data-bs-target="#scenarioModal{{ scenario.id }}">
                                     <i class="fas fa-eye"></i> DETAILS
                                 </button>
-                                <button class="btn btn-outline-warning" onclick="editScenario({{ scenario.id }})">
+                                <button class="btn btn-outline-warning" onclick="alert('Edit feature coming soon')">
                                     <i class="fas fa-edit"></i> EDIT
                                 </button>
                             </div>
@@ -250,6 +298,45 @@
                                         <h6>Description</h6>
                                         <p>{{ scenario.description|default:"No description provided." }}</p>
                                         
+                                        <h6 class="mt-4">Detailed Parameters</h6>
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Scenario Type:</strong></td>
+                                                    <td>{{ scenario.get_scenario_type_display }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Duration:</strong></td>
+                                                    <td>
+                                                        {% if scenario.parameters.duration %}
+                                                            {{ scenario.parameters.duration }} seconds 
+                                                            ({{ scenario.parameters.duration|divisibleby:3600|floatformat:1 }} hours)
+                                                        {% else %}
+                                                            3600 seconds (1 hour)
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Vehicle Count:</strong></td>
+                                                    <td>{{ scenario.parameters.vehicle_count|default:"1000" }} vehicles</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Intersections:</strong></td>
+                                                    <td>{{ scenario.parameters.intersections|default:"20" }} nodes</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Peak Hour:</strong></td>
+                                                    <td>
+                                                        {% if scenario.parameters.peak_hour == True or scenario.parameters.peak_hour == "true" %}
+                                                            Yes
+                                                        {% else %}
+                                                            No
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
                                         <h6 class="mt-4">Research Applications</h6>
                                         <ul>
                                             <li>Testing Reinforcement Learning algorithms</li>
@@ -261,10 +348,14 @@
                                     <div class="col-md-4">
                                         <div class="card bg-light">
                                             <div class="card-body">
-                                                <h6>Quick Stats</h6>
+                                                <h6>Simulation Statistics</h6>
                                                 <div class="mb-2">
-                                                    <small class="text-muted">Type:</small>
-                                                    <div class="fw-bold">{{ scenario.get_scenario_type_display }}</div>
+                                                    <small class="text-muted">Total Simulations:</small>
+                                                    <div class="fw-bold text-primary">{{ stat.total_simulations }}</div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Completed:</small>
+                                                    <div class="fw-bold text-success">{{ stat.completed_simulations }}</div>
                                                 </div>
                                                 <div class="mb-2">
                                                     <small class="text-muted">Status:</small>
@@ -276,7 +367,11 @@
                                                 </div>
                                                 <div class="mb-2">
                                                     <small class="text-muted">Created:</small>
-                                                    <div class="fw-bold">{{ scenario.created_at|date:"M d, Y" }}</div>
+                                                    <div class="fw-bold">{{ scenario.created_at|date:"M d, Y H:i" }}</div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Last Updated:</small>
+                                                    <div class="fw-bold">{{ scenario.updated_at|date:"M d, Y H:i" }}</div>
                                                 </div>
                                                 <div>
                                                     <small class="text-muted">Researcher:</small>
@@ -296,6 +391,7 @@
                         </div>
                     </div>
                 </div>
+                {% endwith %}
                 {% endfor %}
             {% else %}
             <!-- Empty State -->
@@ -314,7 +410,7 @@
                             <a href="{% url 'create_scenario' %}" class="btn btn-primary btn-lg">
                                 <i class="fas fa-plus-circle"></i> CREATE FIRST SCENARIO
                             </a>
-                            <button class="btn btn-outline-secondary btn-lg" onclick="loadSampleScenarios()">
+                            <button class="btn btn-outline-secondary btn-lg" onclick="alert('Sample scenarios feature coming soon')">
                                 <i class="fas fa-download"></i> LOAD SAMPLES
                             </button>
                         </div>
@@ -408,7 +504,7 @@
                 <div class="col-md-4 text-center">
                     <h5><i class="fas fa-user-graduate"></i> RESEARCH DATABASE</h5>
                     <p class="small mb-1">Traffic Scenario Library</p>
-                    <p class="small mb-1">Total Scenarios: {{ scenarios|length }}</p>
+                    <p class="small mb-1">Total Scenarios: {{ total_scenarios|default:"0" }}</p>
                     <p class="small">Generated: {% now "F d, Y, H:i" %}</p>
                 </div>
                 <div class="col-md-4 text-end">
@@ -439,44 +535,6 @@
             localStorage.setItem('selectedScenario', scenarioId);
             window.location.href = "{% url 'dashboard' %}";
         }
-    }
-    
-    function editScenario(scenarioId) {
-        alert('Edit functionality for scenario ' + scenarioId + ' would open here.');
-        // In a real implementation, this would redirect to edit page or open modal
-    }
-    
-    function loadSampleScenarios() {
-        const samples = [
-            {
-                name: "Nairobi CBD Morning Peak",
-                type: "nairobi_peak",
-                description: "Simulation of morning rush hour traffic in Nairobi Central Business District",
-                parameters: {
-                    duration: 7200,
-                    vehicle_count: 1500,
-                    intersections: 25,
-                    peak_hour: true,
-                    weather: "clear"
-                }
-            },
-            {
-                name: "Mombasa Coastal Tourist Traffic",
-                type: "mombasa_coastal",
-                description: "Mixed traffic with high tourist volume in coastal areas",
-                parameters: {
-                    duration: 10800,
-                    vehicle_count: 800,
-                    intersections: 15,
-                    peak_hour: false,
-                    weather: "sunny",
-                    tourist_ratio: 0.4
-                }
-            }
-        ];
-        
-        alert('Sample scenarios loaded successfully!');
-        // In a real implementation, this would create sample scenarios via API
     }
     
     // Initialize scenario selection on dashboard load
@@ -566,6 +624,8 @@
     .scenario-type.nakuru_central { background: #10b981; color: white; }
     .scenario-type.mombasa_coastal { background: #8b5cf6; color: white; }
     .scenario-type.kisumu_lakeside { background: #f59e0b; color: white; }
+    .scenario-type.baseline { background: #6b7280; color: white; }
+    .scenario-type.custom { background: #8b5cf6; color: white; }
     
     .scenario-status.active { background: #10b981; color: white; }
     .scenario-status.inactive { background: #6b7280; color: white; }
@@ -586,7 +646,7 @@
         margin-bottom: 15px;
     }
     
-    .parameter-item {
+    .parameter-item, .stat-item {
         padding: 10px;
         background: #f8fafc;
         border-radius: 8px;
@@ -594,11 +654,14 @@
         height: 100%;
     }
     
-    .parameter-value {
+    .parameter-value, .stat-value {
         font-weight: 600;
         color: #1e293b;
         margin-top: 3px;
     }
+    
+    .stat-value.text-primary { color: #3b82f6; }
+    .stat-value.text-success { color: #10b981; }
     
     .advanced-params pre {
         font-size: 0.8rem;
@@ -694,6 +757,10 @@
     
     .text-muted {
         color: #64748b !important;
+    }
+    
+    table.table-sm td {
+        padding: 0.5rem;
     }
 </style>
 
