@@ -612,3 +612,30 @@ python manage.py seed_simulations
 
 # 9. Run development server
 python manage.py runserver  
+
+# 8.3 Access Points
+
+**Web Interface**
+- **Dashboard:** http://localhost:8000
+- **Admin Panel:** http://localhost:8000/admin
+- **API Documentation:** http://localhost:8000/api/docs
+- **REST API:** http://localhost:8000/api/
+
+**Default Credentials**
+- **Administrator:** admin / Admin@123
+- **Test User:** testuser / Test@123
+- **Researcher:** researcher / Research@123
+
+# 8.4 Development Workflow
+
+**Running Tests**
+```bash
+# Run all tests
+python manage.py test
+
+# Run specific test module
+python manage.py test core.tests.test_models
+
+# Run with coverage report
+coverage run manage.py test
+coverage report
