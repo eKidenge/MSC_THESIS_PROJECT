@@ -1,0 +1,741 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- University Research Header -->
+    <div class="bg-research-header text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="research-logo">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h3 class="mb-1">EGERTON UNIVERSITY - RESEARCH FINDINGS</h3>
+                    <p class="mb-0 opacity-75">Department of Computer Science | Traffic Optimization Study Results</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="results-logo">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Navigation -->
+    <div class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-0"><i class="fas fa-chart-line"></i> SIMULATION RESULTS ANALYSIS</h4>
+                    <small class="opacity-75">Study ID: {{ simulation.id }} | Researcher: Elisha Kidenge</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-list"></i> All Results
+                        </a>
+                        <a href="{% url 'comparison' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-balance-scale"></i> Compare
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Results Header -->
+        <div class="card results-header-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2"><i class="fas fa-clipboard-check"></i> {{ simulation.name }}</h1>
+                        <div class="results-meta">
+                            <span class="badge algorithm-badge {{ simulation.algorithm }}">
+                                <i class="fas fa-robot"></i> {{ simulation.get_algorithm_display }}
+                            </span>
+                            <span class="badge scenario-badge">
+                                <i class="fas fa-map-marker-alt"></i> {{ simulation.scenario.name }}
+                            </span>
+                            <span class="badge status-badge {% if simulation.status == 'completed' %}completed{% else %}running{% endif %}">
+                                {{ simulation.get_status_display|upper }}
+                            </span>
+                            <span class="text-muted ms-3">
+                                <i class="far fa-calendar"></i> {{ simulation.created_at|date:"F d, Y" }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'export_csv' simulation.id %}" class="btn btn-success">
+                                <i class="fas fa-file-export"></i> EXPORT DATA
+                            </a>
+                            <button onclick="window.print()" class="btn btn-primary">
+                                <i class="fas fa-print"></i> PRINT REPORT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics Dashboard -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card metric-card travel-time">
+                    <div class="card-body text-center">
+                        <div class="metric-icon mb-3">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                        <h3 class="metric-value">{{ metrics.avg_travel_time|floatformat:1 }} min</h3>
+                        <p class="metric-label">AVERAGE TRAVEL TIME</p>
+                        <div class="improvement-badge">
+                            <i class="fas fa-arrow-down"></i> {{ metrics.improvement|floatformat:1 }}% IMPROVEMENT
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card fuel-consumption">
+                    <div class="card-body text-center">
+                        <div class="metric-icon mb-3">
+                            <i class="fas fa-gas-pump fa-2x"></i>
+                        </div>
+                        <h3 class="metric-value">{{ metrics.fuel_consumed|floatformat:1 }} L</h3>
+                        <p class="metric-label">FUEL CONSUMPTION</p>
+                        <div class="improvement-badge">
+                            <i class="fas fa-arrow-down"></i> {{ metrics.fuel_saving|floatformat:1 }}% SAVINGS
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card emissions">
+                    <div class="card-body text-center">
+                        <div class="metric-icon mb-3">
+                            <i class="fas fa-industry fa-2x"></i>
+                        </div>
+                        <h3 class="metric-value">{{ result.co2_emissions|floatformat:1 }} kg</h3>
+                        <p class="metric-label">CO₂ EMISSIONS</p>
+                        <div class="improvement-badge">
+                            <i class="fas fa-arrow-down"></i> {{ result.emissions_reduction|floatformat:1 }}% REDUCTION
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card delay">
+                    <div class="card-body text-center">
+                        <div class="metric-icon mb-3">
+                            <i class="fas fa-traffic-light fa-2x"></i>
+                        </div>
+                        <h3 class="metric-value">{{ metrics.total_delay|floatformat:1 }} hrs</h3>
+                        <p class="metric-label">TOTAL DELAY</p>
+                        <div class="improvement-badge">
+                            <i class="fas fa-arrow-down"></i> {{ metrics.delay_reduction|floatformat:1 }}% REDUCTION
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative Analysis -->
+        <div class="card analysis-card mb-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-balance-scale"></i> COMPARATIVE ANALYSIS: AI vs BASELINE</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table analysis-table">
+                        <thead>
+                            <tr class="table-dark">
+                                <th>PERFORMANCE METRIC</th>
+                                <th class="text-center">AI OPTIMIZED</th>
+                                <th class="text-center">BASELINE</th>
+                                <th class="text-center">IMPROVEMENT</th>
+                                <th class="text-center">RESEARCH SIGNIFICANCE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Travel Time</strong><br><small>Average minutes per trip</small></td>
+                                <td class="text-center ai-value">{{ metrics.avg_travel_time|floatformat:1 }} min</td>
+                                <td class="text-center baseline-value">{{ baseline.avg_travel_time|floatformat:1 }} min</td>
+                                <td class="text-center">
+                                    <span class="improvement-badge-large success">
+                                        <i class="fas fa-arrow-down"></i> {{ metrics.improvement|floatformat:1 }}%
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="significance-badge high">HIGH SIGNIFICANCE</span>
+                                    <small class="d-block text-muted">Direct impact on urban mobility</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fuel Consumption</strong><br><small>Liters per 1000 vehicles</small></td>
+                                <td class="text-center ai-value">{{ metrics.fuel_consumed|floatformat:1 }} L</td>
+                                <td class="text-center baseline-value">{{ baseline.fuel_consumed|floatformat:1 }} L</td>
+                                <td class="text-center">
+                                    <span class="improvement-badge-large success">
+                                        <i class="fas fa-arrow-down"></i> {{ metrics.fuel_saving|floatformat:1 }}%
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="significance-badge high">HIGH SIGNIFICANCE</span>
+                                    <small class="d-block text-muted">Economic and environmental impact</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>CO₂ Emissions</strong><br><small>Kilograms per simulation</small></td>
+                                <td class="text-center ai-value">{{ result.co2_emissions|floatformat:1 }} kg</td>
+                                <td class="text-center baseline-value">{{ result.baseline_co2_emissions|floatformat:1 }} kg</td>
+                                <td class="text-center">
+                                    <span class="improvement-badge-large success">
+                                        <i class="fas fa-arrow-down"></i> {{ result.emissions_reduction|floatformat:1 }}%
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="significance-badge high">HIGH SIGNIFICANCE</span>
+                                    <small class="d-block text-muted">Climate change mitigation</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Traffic Delay</strong><br><small>Total hours lost</small></td>
+                                <td class="text-center ai-value">{{ metrics.total_delay|floatformat:1 }} hrs</td>
+                                <td class="text-center baseline-value">{{ baseline.total_delay|floatformat:1 }} hrs</td>
+                                <td class="text-center">
+                                    <span class="improvement-badge-large success">
+                                        <i class="fas fa-arrow-down"></i> {{ metrics.delay_reduction|floatformat:1 }}%
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="significance-badge medium">MEDIUM SIGNIFICANCE</span>
+                                    <small class="d-block text-muted">Productivity improvement</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Research Insights -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card insights-card">
+                    <div class="card-header bg-gradient-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> RESEARCH INSIGHTS & FINDINGS</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="insight-item mb-4">
+                            <h6><i class="fas fa-check-circle text-success"></i> KEY ACHIEVEMENT</h6>
+                            <p>The {{ simulation.get_algorithm_display }} algorithm successfully reduced average travel time by 
+                            <strong>{{ metrics.improvement|floatformat:1 }}%</strong>, demonstrating significant potential for 
+                            AI-driven traffic optimization in Kenyan urban centers.</p>
+                        </div>
+                        
+                        <div class="insight-item mb-4">
+                            <h6><i class="fas fa-leaf text-primary"></i> ENVIRONMENTAL IMPACT</h6>
+                            <p>With {{ result.emissions_reduction|floatformat:1 }}% reduction in CO₂ emissions, this research 
+                            contributes to Kenya's climate change mitigation goals and supports sustainable urban development.</p>
+                        </div>
+                        
+                        <div class="insight-item">
+                            <h6><i class="fas fa-chart-line text-warning"></i> ECONOMIC IMPLICATIONS</h6>
+                            <p>The {{ metrics.fuel_saving|floatformat:1 }}% fuel savings translate to substantial economic benefits 
+                            for both individual motorists and the national economy, particularly during peak traffic hours.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card simulation-details-card">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> SIMULATION PARAMETERS</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="parameter-item mb-3">
+                            <strong>Algorithm Type:</strong><br>
+                            <span class="badge algorithm-detail {{ simulation.algorithm }}">
+                                {{ simulation.get_algorithm_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="parameter-item mb-3">
+                            <strong>Scenario:</strong><br>
+                            <span class="text-primary">{{ simulation.scenario.name }}</span>
+                        </div>
+                        
+                        <div class="parameter-item mb-3">
+                            <strong>Duration:</strong><br>
+                            {{ simulation.parameters.duration|default:"3600" }} seconds ({{ simulation.parameters.duration|default:3600|divisibleby:3600|yesno:"1 hour,Other" }})
+                        </div>
+                        
+                        <div class="parameter-item mb-3">
+                            <strong>Vehicle Count:</strong><br>
+                            {{ simulation.parameters.vehicle_count|default:"1000" }} vehicles
+                        </div>
+                        
+                        <div class="parameter-item mb-3">
+                            <strong>Status:</strong><br>
+                            <span class="badge status-detail {% if simulation.status == 'completed' %}completed{% else %}running{% endif %}">
+                                {{ simulation.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="parameter-item">
+                            <strong>Completion Date:</strong><br>
+                            {{ simulation.completed_at|default:"In progress" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export and Actions -->
+        <div class="card actions-card">
+            <div class="card-header bg-gradient-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-download"></i> DATA EXPORT & SHARING</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Export Research Data</h6>
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="btn-group me-3 mb-2" role="group">
+                                <a href="{% url 'export_csv' simulation.id %}" class="btn btn-outline-success">
+                                    <i class="fas fa-file-csv"></i> CSV Format
+                                </a>
+                                <a href="{% url 'export_pdf' simulation.id %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-file-pdf"></i> PDF Report
+                                </a>
+                            </div>
+                            <div class="btn-group mb-2" role="group">
+                                <button class="btn btn-outline-primary" onclick="exportJSON()">
+                                    <i class="fas fa-file-code"></i> JSON Data
+                                </button>
+                                <button class="btn btn-outline-info" onclick="exportChart()">
+                                    <i class="fas fa-chart-bar"></i> Chart Image
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted">Export formats suitable for academic papers and further analysis</small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Research Actions</h6>
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="btn-group me-3 mb-2" role="group">
+                                <a href="{% url 'ai_experiment' simulation.id %}" class="btn btn-primary">
+                                    <i class="fas fa-flask"></i> View Experiment
+                                </a>
+                                <a href="{% url 'comparison' %}" class="btn btn-warning">
+                                    <i class="fas fa-balance-scale"></i> Compare Results
+                                </a>
+                            </div>
+                            <div class="btn-group mb-2" role="group">
+                                <button class="btn btn-success" onclick="shareResearch()">
+                                    <i class="fas fa-share-alt"></i> Share Findings
+                                </button>
+                                <button onclick="window.print()" class="btn btn-secondary">
+                                    <i class="fas fa-print"></i> Print Report
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted">Share your findings with supervisors and research community</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Footer -->
+    <footer class="bg-research-footer text-white py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-university"></i> EGERTON UNIVERSITY</h5>
+                    <p class="small">Faculty of Science<br>Department of Computer Science<br>Nakuru, Kenya</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5><i class="fas fa-user-graduate"></i> RESEARCH DOCUMENT</h5>
+                    <p class="small mb-1">Thesis Study Results Analysis</p>
+                    <p class="small mb-1">Generated: {% now "F d, Y, H:i" %}</p>
+                    <p class="small">Study ID: {{ simulation.id }}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5><i class="fas fa-chalkboard-teacher"></i> ACADEMIC SUPERVISION</h5>
+                    <p class="small mb-1"><strong>Dr. Zachary Bosire</strong> (Lead Supervisor)</p>
+                    <p class="small mb-1"><strong>Dr. Duke Oeba</strong> (Co-Supervisor)</p>
+                    <p class="small">AI & Transportation Research Unit</p>
+                </div>
+            </div>
+            <hr class="bg-light my-3">
+            <div class="text-center">
+                <p class="mb-0 small">
+                    <i class="fas fa-graduation-cap"></i> 
+                    © 2024 Egerton University - MSc Computer Science Thesis | 
+                    Researcher: Elisha Kidenge (SM24/11854/24) | 
+                    Study: AI-Powered Traffic Optimization in Kenyan Urban Centers
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // Export functions
+    function exportJSON() {
+        const data = {
+            simulation: "{{ simulation.name }}",
+            algorithm: "{{ simulation.get_algorithm_display }}",
+            metrics: {
+                travelTime: {{ metrics.avg_travel_time|floatformat:1 }},
+                fuelConsumption: {{ metrics.fuel_consumed|floatformat:1 }},
+                emissions: {{ result.co2_emissions|floatformat:1 }},
+                delay: {{ metrics.total_delay|floatformat:1 }}
+            },
+            improvements: {
+                travelTime: {{ metrics.improvement|floatformat:1 }},
+                fuel: {{ metrics.fuel_saving|floatformat:1 }},
+                emissions: {{ result.emissions_reduction|floatformat:1 }},
+                delay: {{ metrics.delay_reduction|floatformat:1 }}
+            }
+        };
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "simulation_{{ simulation.id }}_data.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        
+        alert('JSON data exported successfully!');
+    }
+    
+    function exportChart() {
+        alert('Chart export feature would generate PNG/SVG images of the visualization.');
+        // In a real implementation, this would use Chart.js toCanvas() method
+    }
+    
+    function shareResearch() {
+        const shareText = `Check out my traffic optimization research findings from Egerton University! ${window.location.href}`;
+        if (navigator.share) {
+            navigator.share({
+                title: 'MATAFITI Research Findings',
+                text: shareText,
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(shareText);
+            alert('Research link copied to clipboard!');
+        }
+    }
+</script>
+
+<style>
+    /* Custom Styles for Results Page */
+    .bg-research-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    }
+    
+    .bg-research-footer {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+    
+    .research-logo, .results-logo {
+        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .results-header-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #3b82f6;
+    }
+    
+    .results-meta .badge {
+        margin-right: 8px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    .algorithm-badge {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+    }
+    
+    .scenario-badge {
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        color: white;
+    }
+    
+    .status-badge {
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-badge.completed {
+        background: #10b981;
+        color: white;
+    }
+    
+    .status-badge.running {
+        background: #f59e0b;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+    
+    .metric-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    .metric-card.travel-time {
+        border-top: 4px solid #3b82f6;
+    }
+    
+    .metric-card.fuel-consumption {
+        border-top: 4px solid #10b981;
+    }
+    
+    .metric-card.emissions {
+        border-top: 4px solid #8b5cf6;
+    }
+    
+    .metric-card.delay {
+        border-top: 4px solid #f59e0b;
+    }
+    
+    .metric-icon {
+        color: #6b7280;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 10px 0;
+        color: #1e293b;
+    }
+    
+    .metric-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+    
+    .improvement-badge {
+        background: #10b981;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+    
+    .analysis-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .analysis-table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .ai-value {
+        font-weight: 600;
+        color: #3b82f6;
+        font-size: 1.1rem;
+    }
+    
+    .baseline-value {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 1.1rem;
+        text-decoration: line-through;
+    }
+    
+    .improvement-badge-large {
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .improvement-badge-large.success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 2px solid #10b981;
+    }
+    
+    .significance-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .significance-badge.high {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #f87171;
+    }
+    
+    .significance-badge.medium {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #f59e0b;
+    }
+    
+    .insights-card, .simulation-details-card, .actions-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .insight-item {
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .parameter-item {
+        padding: 10px;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .algorithm-detail {
+        background: #3b82f6;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+    
+    .status-detail {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+    
+    .status-detail.completed {
+        background: #10b981;
+        color: white;
+    }
+    
+    .status-detail.running {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .btn-toolbar .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-toolbar .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 700;
+        color: #1e293b;
+    }
+</style>
+
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Animation -->
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .results-header-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .metric-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .metric-card:nth-child(2) { animation-delay: 0.1s; }
+    .metric-card:nth-child(3) { animation-delay: 0.2s; }
+    .metric-card:nth-child(4) { animation-delay: 0.3s; }
+    
+    .analysis-card {
+        animation: fadeIn 0.6s ease-out 0.4s both;
+    }
+    
+    .insights-card, .simulation-details-card {
+        animation: fadeIn 0.6s ease-out 0.5s both;
+    }
+    
+    .actions-card {
+        animation: fadeIn 0.6s ease-out 0.6s both;
+    }
+</style>
+{% endblock %}

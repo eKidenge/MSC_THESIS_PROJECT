@@ -1,0 +1,802 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- University Research Header -->
+    <div class="bg-university text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="research-logo">
+                        <i class="fas fa-balance-scale fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h3 class="mb-1">EGERTON UNIVERSITY - COMPARATIVE ANALYSIS</h3>
+                    <p class="mb-0 opacity-75">Department of Computer Science | AI Algorithm Performance Comparison</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="student-logo">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Navigation -->
+    <div class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-0"><i class="fas fa-chart-line"></i> COMPARATIVE ANALYSIS TOOL</h4>
+                    <small class="opacity-75">Compare AI algorithm performance across different scenarios</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-list"></i> Results
+                        </a>
+                        <a href="{% url 'comparison' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-balance-scale"></i> Compare
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Comparison Tool Header -->
+        <div class="card comparison-header-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2"><i class="fas fa-microscope"></i> AI ALGORITHM COMPARISON</h1>
+                        <p class="mb-0 text-muted">
+                            Research Study: Elisha Kidenge (SM24/11854/24) | 
+                            Compare different AI algorithms under identical traffic conditions
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-primary btn-lg" onclick="runComparativeAnalysis()">
+                            <i class="fas fa-play-circle"></i> RUN ANALYSIS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Selection Form -->
+        <div class="card comparison-form-card mb-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-sliders-h"></i> SELECT SIMULATIONS FOR COMPARISON</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="comparisonForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <!-- Baseline Simulation Selection -->
+                        <div class="col-md-6">
+                            <div class="selection-card baseline-card">
+                                <div class="selection-header">
+                                    <h5><i class="fas fa-ruler"></i> BASELINE SIMULATION</h5>
+                                    <small class="text-muted">Select the control/benchmark simulation</small>
+                                </div>
+                                <div class="selection-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Baseline Algorithm</label>
+                                        <select name="baseline" class="form-select" required>
+                                            <option value="">Select baseline simulation...</option>
+                                            {% for simulation in baseline_simulations %}
+                                            <option value="{{ simulation.id }}">
+                                                {{ simulation.name }} ({{ simulation.scenario.name }})
+                                            </option>
+                                            {% empty %}
+                                            <option value="" disabled>No baseline simulations available</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="selected-simulation-preview" id="baselinePreview">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Select a baseline simulation to see details here
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Simulation Selection -->
+                        <div class="col-md-6">
+                            <div class="selection-card ai-card">
+                                <div class="selection-header">
+                                    <h5><i class="fas fa-robot"></i> AI OPTIMIZED SIMULATION</h5>
+                                    <small class="text-muted">Select the AI algorithm to compare</small>
+                                </div>
+                                <div class="selection-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">AI Algorithm</label>
+                                        <select name="ai_simulation" class="form-select" required>
+                                            <option value="">Select AI simulation...</option>
+                                            {% for simulation in ai_simulations %}
+                                            <option value="{{ simulation.id }}">
+                                                {{ simulation.name }} ({{ simulation.get_algorithm_display }})
+                                            </option>
+                                            {% empty %}
+                                            <option value="" disabled>No AI simulations available</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="selected-simulation-preview" id="aiPreview">
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Select an AI simulation to see details here
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Comparison Parameters -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card parameters-card">
+                                <div class="card-header bg-gradient-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-cogs"></i> COMPARISON PARAMETERS</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="compare_travel_time" checked>
+                                                <label class="form-check-label fw-bold">Travel Time Analysis</label>
+                                                <small class="d-block text-muted">Compare average travel times</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="compare_fuel" checked>
+                                                <label class="form-check-label fw-bold">Fuel Consumption</label>
+                                                <small class="d-block text-muted">Compare fuel efficiency</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="compare_emissions" checked>
+                                                <label class="form-check-label fw-bold">CO₂ Emissions</label>
+                                                <small class="d-block text-muted">Compare environmental impact</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="statistical_analysis" checked>
+                                                <label class="form-check-label fw-bold">Statistical Analysis</label>
+                                                <small class="d-block text-muted">Include statistical significance</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="generate_report" checked>
+                                                <label class="form-check-label fw-bold">Generate Report</label>
+                                                <small class="d-block text-muted">Create PDF comparison report</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="save_comparison" checked>
+                                                <label class="form-check-label fw-bold">Save Comparison</label>
+                                                <small class="d-block text-muted">Save to research database</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-chart-line"></i> RUN COMPARATIVE ANALYSIS
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Comparison Examples -->
+        <div class="card examples-card mb-4">
+            <div class="card-header bg-gradient-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> QUICK COMPARISON EXAMPLES</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="example-comparison" onclick="loadExample('rl_vs_baseline')">
+                            <div class="example-header">
+                                <h6>RL vs Baseline</h6>
+                                <span class="badge bg-primary">Popular</span>
+                            </div>
+                            <div class="example-body">
+                                <p class="small">Compare Reinforcement Learning with traditional methods</p>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-success">Avg Improvement: 28.5%</span>
+                                    <button class="btn btn-sm btn-outline-primary">LOAD</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="example-comparison" onclick="loadExample('ga_vs_rl')">
+                            <div class="example-header">
+                                <h6>GA vs RL</h6>
+                                <span class="badge bg-success">Recommended</span>
+                            </div>
+                            <div class="example-body">
+                                <p class="small">Compare Genetic Algorithm with Reinforcement Learning</p>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-warning">Avg Difference: 3.2%</span>
+                                    <button class="btn btn-sm btn-outline-success">LOAD</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="example-comparison" onclick="loadExample('hybrid_vs_all')">
+                            <div class="example-header">
+                                <h6>Hybrid vs All</h6>
+                                <span class="badge bg-info">Advanced</span>
+                            </div>
+                            <div class="example-body">
+                                <p class="small">Compare Hybrid AI with all other algorithms</p>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-danger">Best Performance: +31.2%</span>
+                                    <button class="btn btn-sm btn-outline-info">LOAD</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Comparisons -->
+        <div class="card recent-comparisons-card">
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="mb-0"><i class="fas fa-history"></i> RECENT COMPARATIVE ANALYSES</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover comparisons-table">
+                        <thead>
+                            <tr class="table-dark">
+                                <th>COMPARISON</th>
+                                <th>TRAVEL TIME IMPROVEMENT</th>
+                                <th>FUEL SAVINGS</th>
+                                <th>EMISSIONS REDUCTION</th>
+                                <th>STATISTICAL SIGNIFICANCE</th>
+                                <th>DATE</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>RL vs Baseline</strong><br>
+                                    <small class="text-muted">Nairobi Peak Hour</small>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+28.5%</span>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+29.2%</span>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+26.8%</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">p < 0.001</span>
+                                </td>
+                                <td>
+                                    <small>Dec 15, 2024</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>GA vs Baseline</strong><br>
+                                    <small class="text-muted">Mombasa Coastal</small>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+24.1%</span>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+25.8%</span>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+23.5%</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">p < 0.01</span>
+                                </td>
+                                <td>
+                                    <small>Dec 14, 2024</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-redo"></i> Re-run
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Hybrid vs RL</strong><br>
+                                    <small class="text-muted">Kisumu Lakeside</small>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+3.2%</span>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+3.5%</span>
+                                </td>
+                                <td>
+                                    <span class="improvement-badge success">+2.9%</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">p < 0.05</span>
+                                </td>
+                                <td>
+                                    <small>Dec 13, 2024</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Methodology -->
+    <div class="bg-light py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h4 class="text-center mb-4"><i class="fas fa-flask"></i> RESEARCH METHODOLOGY</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="methodology-step text-center">
+                                <div class="step-number">1</div>
+                                <h6>Simulation Selection</h6>
+                                <p class="small">Select baseline and AI simulations with identical traffic conditions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="methodology-step text-center">
+                                <div class="step-number">2</div>
+                                <h6>Data Extraction</h6>
+                                <p class="small">Extract performance metrics from both simulations</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="methodology-step text-center">
+                                <div class="step-number">3</div>
+                                <h6>Statistical Analysis</h6>
+                                <p class="small">Calculate improvements and statistical significance</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="methodology-step text-center">
+                                <div class="step-number">4</div>
+                                <h6>Report Generation</h6>
+                                <p class="small">Generate comprehensive comparison reports</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Footer -->
+    <footer class="bg-research-footer text-white py-4 mt-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-university"></i> EGERTON UNIVERSITY</h5>
+                    <p class="small">Faculty of Science<br>Department of Computer Science<br>Nakuru, Kenya</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5><i class="fas fa-user-graduate"></i> COMPARATIVE RESEARCH</h5>
+                    <p class="small mb-1">AI Algorithm Performance Analysis</p>
+                    <p class="small mb-1">Researcher: Elisha Kidenge</p>
+                    <p class="small">Registration: SM24/11854/24</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5><i class="fas fa-chalkboard-teacher"></i> RESEARCH SUPERVISION</h5>
+                    <p class="small mb-1"><strong>Dr. Zachary Bosire</strong> (Lead Supervisor)</p>
+                    <p class="small mb-1"><strong>Dr. Duke Oeba</strong> (Co-Supervisor)</p>
+                    <p class="small">Comparative Analysis Research Unit</p>
+                </div>
+            </div>
+            <hr class="bg-light my-3">
+            <div class="text-center">
+                <p class="mb-0 small">
+                    <i class="fas fa-graduation-cap"></i> 
+                    © 2024 Egerton University - MSc Computer Science Thesis | 
+                    Comparative Analysis Module for AI Traffic Optimization Research
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // Load example comparisons
+    function loadExample(exampleType) {
+        const examples = {
+            'rl_vs_baseline': {
+                baseline: '1',
+                ai_simulation: '2',
+                name: 'Reinforcement Learning vs Baseline'
+            },
+            'ga_vs_rl': {
+                baseline: '2',
+                ai_simulation: '3',
+                name: 'Genetic Algorithm vs Reinforcement Learning'
+            },
+            'hybrid_vs_all': {
+                baseline: '1',
+                ai_simulation: '4',
+                name: 'Hybrid AI vs All Algorithms'
+            }
+        };
+        
+        if (examples[exampleType]) {
+            const example = examples[exampleType];
+            document.querySelector('select[name="baseline"]').value = example.baseline;
+            document.querySelector('select[name="ai_simulation"]').value = example.ai_simulation;
+            
+            updateSimulationPreviews();
+            
+            alert(`Loaded "${example.name}" comparison example`);
+        }
+    }
+    
+    // Update simulation previews
+    function updateSimulationPreviews() {
+        const baselineSelect = document.querySelector('select[name="baseline"]');
+        const aiSelect = document.querySelector('select[name="ai_simulation"]');
+        
+        if (baselineSelect.value) {
+            document.getElementById('baselinePreview').innerHTML = `
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-ruler"></i> Baseline Selected</h6>
+                    <p class="mb-1">Traditional traffic management method</p>
+                    <small class="text-muted">Will be used as the control for comparison</small>
+                </div>
+            `;
+        }
+        
+        if (aiSelect.value) {
+            document.getElementById('aiPreview').innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-robot"></i> AI Algorithm Selected</h6>
+                    <p class="mb-1">Advanced AI optimization method</p>
+                    <small class="text-muted">Performance will be compared against baseline</small>
+                </div>
+            `;
+        }
+    }
+    
+    // Run comparative analysis
+    function runComparativeAnalysis() {
+        const baseline = document.querySelector('select[name="baseline"]').value;
+        const ai = document.querySelector('select[name="ai_simulation"]').value;
+        
+        if (!baseline || !ai) {
+            alert('Please select both baseline and AI simulations');
+            return;
+        }
+        
+        if (baseline === ai) {
+            alert('Cannot compare the same simulation. Please select different simulations.');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ANALYZING...';
+        submitBtn.disabled = true;
+        
+        // Submit form after delay
+        setTimeout(() => {
+            document.getElementById('comparisonForm').submit();
+        }, 1500);
+    }
+    
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update previews when selections change
+        document.querySelector('select[name="baseline"]').addEventListener('change', updateSimulationPreviews);
+        document.querySelector('select[name="ai_simulation"]').addEventListener('change', updateSimulationPreviews);
+        
+        // Form submission handler
+        document.getElementById('comparisonForm').addEventListener('submit', function(e) {
+            const baseline = document.querySelector('select[name="baseline"]').value;
+            const ai = document.querySelector('select[name="ai_simulation"]').value;
+            
+            if (!baseline || !ai) {
+                e.preventDefault();
+                alert('Please select both baseline and AI simulations');
+                return;
+            }
+            
+            if (baseline === ai) {
+                e.preventDefault();
+                alert('Cannot compare the same simulation. Please select different simulations.');
+                return;
+            }
+        });
+    });
+</script>
+
+<style>
+    /* Custom Styles for Comparison Page */
+    .bg-university {
+        background: linear-gradient(135deg, #0a2e5c 0%, #1a5fb4 100%);
+    }
+    
+    .bg-research-footer {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+    
+    .research-logo, .student-logo {
+        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .comparison-header-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #3b82f6;
+    }
+    
+    .comparison-form-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .selection-card {
+        padding: 20px;
+        border-radius: 10px;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .baseline-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #3b82f6;
+    }
+    
+    .ai-card {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border: 2px solid #10b981;
+    }
+    
+    .selection-header {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .selected-simulation-preview {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background: white;
+    }
+    
+    .parameters-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+    
+    .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
+    
+    .examples-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .example-comparison {
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .example-comparison:hover {
+        background: #f1f5f9;
+        transform: translateY(-5px);
+        border-color: #3b82f6;
+    }
+    
+    .example-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .recent-comparisons-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .comparisons-table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        background: #1e293b !important;
+    }
+    
+    .improvement-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .improvement-badge.success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .methodology-step {
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .methodology-step:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        background: #3b82f6;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin: 0 auto 15px auto;
+    }
+    
+    .btn-lg {
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        padding: 10px 15px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .text-muted {
+        color: #64748b !important;
+    }
+</style>
+
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Animation -->
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .comparison-header-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .comparison-form-card {
+        animation: fadeIn 0.6s ease-out 0.1s both;
+    }
+    
+    .examples-card {
+        animation: fadeIn 0.6s ease-out 0.2s both;
+    }
+    
+    .recent-comparisons-card {
+        animation: fadeIn 0.6s ease-out 0.3s both;
+    }
+    
+    .methodology-step {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .methodology-step:nth-child(2) { animation-delay: 0.1s; }
+    .methodology-step:nth-child(3) { animation-delay: 0.2s; }
+    .methodology-step:nth-child(4) { animation-delay: 0.3s; }
+</style>
+{% endblock %}

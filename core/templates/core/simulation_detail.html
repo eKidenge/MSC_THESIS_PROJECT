@@ -1,0 +1,643 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load tz %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Top Header with University Details -->
+    <div class="bg-university text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="university-logo">
+                        <i class="fas fa-graduation-cap fa-3x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="mb-1"><strong>EGERTON UNIVERSITY</strong></h1>
+                    <h4 class="mb-0">Faculty of Science - Department of Computer Science</h4>
+                    <p class="mb-0">Master of Science in Computer Science Thesis Project</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="student-logo">
+                        <i class="fas fa-user-graduate fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student & Supervisor Information -->
+    <div class="bg-light py-3 border-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-2"><i class="fas fa-user-graduate"></i> STUDENT INFORMATION</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Name:</strong> ELISHA KIDENGE</p>
+                            <p class="mb-1"><strong>Reg No:</strong> SM24/11854/24</p>
+                            <p class="mb-0"><strong>Program:</strong> MSC Computer Science</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Year:</strong> 2024/2025</p>
+                            <p class="mb-1"><strong>Specialization:</strong> AI & Traffic Systems</p>
+                            <p class="mb-0"><strong>Email:</strong> KIDENGE.1185424@student.egerton.ac.ke</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-success mb-2"><i class="fas fa-chalkboard-teacher"></i> SUPERVISORS</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Dr. Zachary Bosire</strong></p>
+                            <p class="mb-0 text-muted">COD, Computer Science, Cybersecurity</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Dr. Duke Oeba</strong></p>
+                            <p class="mb-0 text-muted">Electronics & AI</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thesis Title & Navigation -->
+    <div class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-1">MATAFITI: AI-Powered Traffic Optimization System</h2>
+                    <p class="mb-0 opacity-75">An Intelligent Traffic Management System Using Reinforcement Learning for Kenyan Urban Centers</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="nav-buttons">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'scenario_list' %}" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-map"></i> Scenarios
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-chart-bar"></i> Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Display messages -->
+        {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Simulation Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="mb-0"><i class="fas fa-rocket"></i> SIMULATION DETAILS</h3>
+                                <small class="opacity-75">Research ID: {{ simulation.id }} | Created: {{ simulation.created_at|date:"F j, Y H:i" }}</small>
+                            </div>
+                            <div class="simulation-badge">
+                                <span class="badge {% if simulation.status == 'completed' %}bg-success{% elif simulation.status == 'running' %}bg-warning{% elif simulation.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %} fs-6">
+                                    {{ simulation.get_status_display|upper }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h2 class="text-primary">{{ simulation.name }}</h2>
+                                <p class="lead">{{ simulation.description|default:"No description provided" }}</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'results' simulation.id %}" class="btn btn-success">
+                                        <i class="fas fa-chart-bar"></i> View Results
+                                    </a>
+                                    <a href="{% url 'export_csv' simulation.id %}" class="btn btn-info">
+                                        <i class="fas fa-download"></i> Export CSV
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Simulation Info -->
+            <div class="col-lg-4">
+                <!-- Simulation Info Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-gradient-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> SIMULATION INFORMATION</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item mb-3">
+                            <h6 class="text-muted">Scenario</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-map-marker-alt text-success"></i>
+                                <strong>{{ simulation.scenario.name }}</strong>
+                            </p>
+                            <small class="text-muted">{{ simulation.scenario.get_scenario_type_display }}</small>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <h6 class="text-muted">AI Algorithm</h6>
+                            <span class="badge bg-info fs-6">{{ simulation.get_algorithm_display }}</span>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <h6 class="text-muted">Progress</h6>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar {% if simulation.status == 'running' %}progress-bar-striped progress-bar-animated{% endif %}" 
+                                         style="width: {{ simulation.progress|default:0 }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ simulation.progress|default:0 }}% Complete</small>
+                            </div>
+                            <div class="col-6">
+                                <h6 class="text-muted">Epochs</h6>
+                                <p class="mb-0">
+                                    <strong>{{ simulation.current_epoch|default:0 }}</strong> / {{ simulation.total_epochs }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <h6 class="text-muted">Timeline</h6>
+                            <p class="mb-1"><i class="far fa-clock"></i> <strong>Started:</strong> 
+                                {% if simulation.started_at %}
+                                    {{ simulation.started_at|date:"F j, Y H:i" }}
+                                {% else %}
+                                    Not started
+                                {% endif %}
+                            </p>
+                            <p class="mb-0"><i class="far fa-calendar-check"></i> <strong>Completed:</strong> 
+                                {% if simulation.completed_at %}
+                                    {{ simulation.completed_at|date:"F j, Y H:i" }}
+                                {% else %}
+                                    In progress
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        {% if simulation.created_by %}
+                        <div class="info-item">
+                            <h6 class="text-muted">Researcher</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-user"></i>
+                                {{ simulation.created_by.get_full_name|default:simulation.created_by.username }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Training Metrics Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> TRAINING METRICS</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if result %}
+                            <div class="metric-item mb-3">
+                                <h6 class="text-muted">Current Loss</h6>
+                                <h4 class="text-danger">{{ simulation.current_loss|default:"0.0000"|floatformat:4 }}</h4>
+                            </div>
+                            <div class="metric-item mb-3">
+                                <h6 class="text-muted">Current Accuracy</h6>
+                                <h4 class="text-success">{{ simulation.current_accuracy|default:"0.00"|floatformat:2 }}%</h4>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Training metrics will appear here</p>
+                                <small>Once the simulation starts training</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column: Live Data -->
+            <div class="col-lg-5">
+                <!-- Live Simulation Card -->
+                <div class="card mb-4 h-100">
+                    <div class="card-header bg-gradient-dark text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> LIVE TRAFFIC SIMULATION</h5>
+                            <div>
+                                <span class="badge {% if simulation.status == 'running' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if simulation.status == 'running' %}LIVE{% else %}{{ simulation.get_status_display|upper }}{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="simulationMap" style="height: 300px; border-radius: 0 0 8px 8px;"></div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <small class="text-muted d-block">VEHICLES</small>
+                                <strong class="h5" id="vehicleCount">{{ vehicles.count|default:"0" }}</strong>
+                            </div>
+                            <div class="col-3">
+                                <small class="text-muted d-block">AVG SPEED</small>
+                                <strong class="h5 text-success" id="avgSpeed">
+                                    {% if vehicles %}
+                                        {{ vehicles.avg_speed|floatformat:1 }} km/h
+                                    {% else %}
+                                        0 km/h
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div class="col-3">
+                                <small class="text-muted d-block">CONGESTION</small>
+                                <strong class="h5 text-warning" id="congestionLevel">MEDIUM</strong>
+                            </div>
+                            <div class="col-3">
+                                <small class="text-muted d-block">DELAY</small>
+                                <strong class="h5 text-danger" id="avgDelay">45 min</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Vehicles -->
+                <div class="card">
+                    <div class="card-header bg-gradient-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-car"></i> RECENT VEHICLES</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if vehicles %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Vehicle ID</th>
+                                        <th>Type</th>
+                                        <th>Speed</th>
+                                        <th>Location</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vehicle in vehicles|slice:":5" %}
+                                    <tr>
+                                        <td><small>{{ vehicle.vehicle_id|truncatechars:8 }}</small></td>
+                                        <td><span class="badge bg-secondary">{{ vehicle.get_vehicle_type_display }}</span></td>
+                                        <td><strong>{{ vehicle.speed|floatformat:1 }}</strong> km/h</td>
+                                        <td><small>{{ vehicle.lat|floatformat:4 }}, {{ vehicle.lng|floatformat:4 }}</small></td>
+                                        <td><small>{{ vehicle.timestamp|timesince }} ago</small></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-car fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No vehicle data yet</p>
+                            <small>Vehicle data will appear during simulation</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Logs & Actions -->
+            <div class="col-lg-3">
+                <!-- Simulation Logs -->
+                <div class="card mb-4">
+                    <div class="card-header bg-gradient-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> SIMULATION LOGS</h5>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        {% if logs %}
+                        <div class="log-list">
+                            {% for log in logs|slice:":10" %}
+                            <div class="log-item mb-2 p-2 border-start border-3 
+                                {% if log.log_level == 'error' %}border-danger bg-danger bg-opacity-10
+                                {% elif log.log_level == 'warning' %}border-warning bg-warning bg-opacity-10
+                                {% elif log.log_level == 'info' %}border-info bg-info bg-opacity-10
+                                {% else %}border-secondary{% endif %}">
+                                <div class="d-flex justify-content-between">
+                                    <small class="fw-bold text-uppercase">{{ log.log_level }}</small>
+                                    <small class="text-muted">{{ log.timestamp|timesince }} ago</small>
+                                </div>
+                                <p class="mb-0 small">{{ log.message|truncatechars:80 }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No logs available</p>
+                            <small>Logs will appear during simulation</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header bg-gradient-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-bolt"></i> QUICK ACTIONS</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            {% if simulation.status == 'running' %}
+                            <button class="btn btn-warning">
+                                <i class="fas fa-pause"></i> Pause Simulation
+                            </button>
+                            <button class="btn btn-danger">
+                                <i class="fas fa-stop"></i> Stop Simulation
+                            </button>
+                            {% elif simulation.status == 'completed' %}
+                            <a href="{% url 'results' simulation.id %}" class="btn btn-success">
+                                <i class="fas fa-chart-bar"></i> View Full Results
+                            </a>
+                            <a href="{% url 'export_csv' simulation.id %}" class="btn btn-info">
+                                <i class="fas fa-download"></i> Download Data
+                            </a>
+                            {% else %}
+                            <button class="btn btn-success">
+                                <i class="fas fa-play"></i> Start Simulation
+                            </button>
+                            {% endif %}
+                            
+                            <a href="{% url 'ai_experiment' simulation.id %}" class="btn btn-primary">
+                                <i class="fas fa-flask"></i> AI Experiment View
+                            </a>
+                            
+                            <a href="{% url 'comparison' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-balance-scale"></i> Compare with Others
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="mb-3">MATAFITI Research</h5>
+                    <p class="small">An AI-powered traffic optimization system for Kenyan urban centers. Part of MSc Computer Science thesis at Egerton University.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-3">Contact Information</h5>
+                    <p class="small mb-1"><i class="fas fa-user-graduate"></i> <strong>Student:</strong> Elisha Kidenge</p>
+                    <p class="small mb-1"><i class="fas fa-envelope"></i> KIDENGE.1185424@student.egerton.ac.ke</p>
+                    <p class="small mb-1"><i class="fas fa-id-card"></i> Registration: SM24/11854/24</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-3">Research Areas</h5>
+                    <span class="badge bg-primary mb-1">Reinforcement Learning</span>
+                    <span class="badge bg-success mb-1">Traffic Optimization</span>
+                    <span class="badge bg-info mb-1">AI in Transportation</span>
+                    <span class="badge bg-warning mb-1">Smart Cities</span>
+                </div>
+            </div>
+            <hr class="bg-white my-3">
+            <div class="text-center">
+                <p class="mb-0 small">© 2025 Egerton University - MSc Computer Science Thesis | Developed by Elisha Kidenge | Supervised by Dr. Zachary Bosire & Dr. Duke Oeba</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Add Leaflet library -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Initialize Simulation Map
+    document.addEventListener('DOMContentLoaded', function() {
+        // Use scenario center or default to Nairobi
+        var scenarioCenter = [-1.286389, 36.817223]; // Nairobi default
+        
+        var simulationMap = L.map('simulationMap').setView(scenarioCenter, 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(simulationMap);
+
+        // Add vehicles to map if available
+        {% if vehicles %}
+            {% for vehicle in vehicles|slice:":50" %}
+                var vehicleColor = getVehicleColor('{{ vehicle.vehicle_type }}');
+                L.circleMarker([{{ vehicle.lat }}, {{ vehicle.lng }}], {
+                    color: vehicleColor,
+                    radius: 6,
+                    fillColor: vehicleColor,
+                    fillOpacity: 0.7
+                })
+                .bindPopup(`<strong>{{ vehicle.vehicle_id }}</strong><br>
+                          Type: {{ vehicle.get_vehicle_type_display }}<br>
+                          Speed: {{ vehicle.speed }} km/h<br>
+                          Heading: {{ vehicle.heading }}°`)
+                .addTo(simulationMap);
+            {% endfor %}
+        {% else %}
+            // Show scenario location marker
+            L.marker(scenarioCenter)
+                .addTo(simulationMap)
+                .bindPopup('<strong>Simulation Area</strong><br>Waiting for vehicle data...')
+                .openPopup();
+        {% endif %}
+
+        // Auto-refresh if simulation is running
+        {% if simulation.status == 'running' %}
+            setTimeout(function() {
+                window.location.reload();
+            }, 10000); // Refresh every 10 seconds
+        {% endif %}
+    });
+
+    function getVehicleColor(type) {
+        const colors = {
+            'car': '#4e73df',
+            'bus': '#e74a3b',
+            'truck': '#f6c23e',
+            'motorcycle': '#1cc88a'
+        };
+        return colors[type] || '#000000';
+    }
+</script>
+
+<style>
+    /* Same CSS as dashboard */
+    .bg-university {
+        background: linear-gradient(135deg, #0a2e5c 0%, #1a5fb4 100%);
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+    }
+    
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+    }
+    
+    .bg-gradient-dark {
+        background: linear-gradient(135deg, #5a5c69 0%, #373840 100%);
+    }
+    
+    .bg-gradient-secondary {
+        background: linear-gradient(135deg, #858796 0%, #60616f 100%);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1rem 1.5rem;
+    }
+    
+    .university-logo, .student-logo {
+        background: rgba(255, 255, 255, 0.2);
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .nav-buttons .btn {
+        border-radius: 20px;
+        padding: 5px 15px;
+        font-weight: 500;
+    }
+    
+    .simulation-badge .badge {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+        border-radius: 20px;
+    }
+    
+    .info-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .metric-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .log-item {
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .log-item:hover {
+        transform: translateX(5px);
+    }
+    
+    footer {
+        background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    }
+    
+    footer .badge {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 600;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 10px;
+    }
+    
+    .form-select-lg {
+        padding: 0.75rem 2.25rem 0.75rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .card:nth-child(2) { animation-delay: 0.1s; }
+    .card:nth-child(3) { animation-delay: 0.2s; }
+    .card:nth-child(4) { animation-delay: 0.3s; }
+</style>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}

@@ -1,0 +1,589 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- University Header -->
+    <div class="bg-university text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="university-logo">
+                        <i class="fas fa-flask fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h3 class="mb-1">EGERTON UNIVERSITY - AI RESEARCH LAB</h3>
+                    <p class="mb-0 opacity-75">Department of Computer Science | MSc Thesis Research</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="student-logo">
+                        <i class="fas fa-brain fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Navigation -->
+    <div class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-0"><i class="fas fa-atom"></i> AI EXPERIMENTS PORTAL</h4>
+                    <small class="opacity-75">Advanced Traffic Optimization Algorithms Research</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'scenario_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-map"></i> Scenarios
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-chart-bar"></i> Results
+                        </a>
+                        <a href="{% url 'comparison' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-balance-scale"></i> Compare
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Research Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card bg-gradient-primary text-white">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">{{ experiments|length }}</h2>
+                        <p class="mb-0">TOTAL EXPERIMENTS</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card bg-gradient-success text-white">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">{{ experiments|length }}</h2>
+                        <p class="mb-0">ACTIVE ALGORITHMS</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card bg-gradient-info text-white">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">85.3%</h2>
+                        <p class="mb-0">AVG ACCURACY</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card bg-gradient-warning text-white">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">28.5%</h2>
+                        <p class="mb-0">TRAFFIC IMPROVEMENT</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experiments Header -->
+        <div class="card research-header-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-1"><i class="fas fa-microscope"></i> AI ALGORITHM EXPERIMENTS</h2>
+                        <p class="mb-0 text-muted">Research Study: Elisha Kidenge (SM24/11854/24) | Supervised by Dr. Zachary Bosire & Dr. Duke Oeba</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'dashboard' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus-circle"></i> START NEW EXPERIMENT
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experiments Grid -->
+        <div class="row">
+            {% if experiments %}
+                {% for experiment in experiments %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card experiment-card h-100">
+                        <div class="card-header experiment-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1"><i class="fas fa-project-diagram"></i> {{ experiment.name }}</h5>
+                                    <small class="text-muted">Scenario: {{ experiment.scenario.name|default:"Not specified" }}</small>
+                                </div>
+                                <span class="experiment-badge {% if experiment.status == 'completed' %}completed{% elif experiment.status == 'running' %}running{% else %}pending{% endif %}">
+                                    {{ experiment.get_status_display|upper }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Algorithm Type -->
+                            <div class="mb-3">
+                                <span class="badge algorithm-badge {{ experiment.algorithm }}">
+                                    <i class="fas fa-robot"></i> {{ experiment.get_algorithm_display }}
+                                </span>
+                            </div>
+                            
+                            <!-- Progress -->
+                            <div class="progress-section mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold">Training Progress</span>
+                                    <span class="text-primary">{{ experiment.progress|default:"0" }}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         style="width: {{ experiment.progress|default:'0' }}%"></div>
+                                </div>
+                                <small class="text-muted">Epoch: {{ experiment.current_epoch|default:"0" }}/{{ experiment.total_epochs|default:"100" }}</small>
+                            </div>
+                            
+                            <!-- Metrics -->
+                            <div class="row metrics-grid text-center mb-3">
+                                <div class="col-6">
+                                    <div class="metric-box loss">
+                                        <div class="metric-label">LOSS</div>
+                                        <div class="metric-value">{{ experiment.current_loss|floatformat:4|default:"0.0000" }}</div>
+                                        <small class="metric-trend text-danger">
+                                            <i class="fas fa-arrow-down"></i> Improving
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="metric-box accuracy">
+                                        <div class="metric-label">ACCURACY</div>
+                                        <div class="metric-value">{{ experiment.current_accuracy|floatformat:2|default:"0.00" }}%</div>
+                                        <small class="metric-trend text-success">
+                                            <i class="fas fa-arrow-up"></i> Increasing
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Created Info -->
+                            <div class="experiment-info">
+                                <p class="mb-2"><i class="far fa-calendar"></i> <strong>Started:</strong> {{ experiment.created_at|date:"M d, Y H:i" }}</p>
+                                <p class="mb-0"><i class="fas fa-user"></i> <strong>Researcher:</strong> {{ experiment.created_by.username|default:"Elisha Kidenge" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent border-top-0">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'ai_experiment' experiment.id %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-chart-line"></i> ANALYZE
+                                </a>
+                                <a href="{% url 'results' experiment.id %}" class="btn btn-outline-success">
+                                    <i class="fas fa-chart-bar"></i> RESULTS
+                                </a>
+                                <button class="btn btn-outline-info" onclick="exportExperiment({{ experiment.id }})">
+                                    <i class="fas fa-download"></i> EXPORT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <!-- No Experiments State -->
+            <div class="col-12">
+                <div class="card no-data-card text-center py-5">
+                    <div class="card-body">
+                        <div class="empty-state-icon mb-4">
+                            <i class="fas fa-flask fa-5x text-muted"></i>
+                        </div>
+                        <h3 class="mb-3">No AI Experiments Found</h3>
+                        <p class="text-muted mb-4">Begin your AI research by running simulations with different algorithms.</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-play-circle"></i> START FIRST EXPERIMENT
+                            </a>
+                            <a href="{% url 'scenario_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-map"></i> BROWSE SCENARIOS
+                            </a>
+                        </div>
+                        <div class="mt-4">
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb"></i> 
+                                <strong>Research Tip:</strong> Start with Reinforcement Learning for initial results, then compare with Genetic Algorithms.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Algorithm Comparison -->
+        <div class="card comparison-card mt-4">
+            <div class="card-header bg-gradient-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-balance-scale-right"></i> ALGORITHM PERFORMANCE COMPARISON</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover algorithm-table">
+                        <thead>
+                            <tr class="table-dark">
+                                <th>ALGORITHM</th>
+                                <th>AVG TRAVEL TIME</th>
+                                <th>FUEL SAVINGS</th>
+                                <th>EMISSIONS REDUCTION</th>
+                                <th>ACCURACY</th>
+                                <th>STATUS</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Reinforcement Learning</strong></td>
+                                <td><span class="badge bg-success">-28.5%</span></td>
+                                <td><span class="badge bg-info">-29.2%</span></td>
+                                <td><span class="badge bg-primary">-26.8%</span></td>
+                                <td><strong class="text-success">92.3%</strong></td>
+                                <td><span class="badge bg-success">VALIDATED</span></td>
+                                <td><button class="btn btn-sm btn-outline-primary">REPLICATE</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Genetic Algorithm</strong></td>
+                                <td><span class="badge bg-success">-24.1%</span></td>
+                                <td><span class="badge bg-info">-25.8%</span></td>
+                                <td><span class="badge bg-primary">-23.5%</span></td>
+                                <td><strong class="text-warning">87.6%</strong></td>
+                                <td><span class="badge bg-warning">TESTING</span></td>
+                                <td><button class="btn btn-sm btn-outline-success">ANALYZE</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hybrid AI</strong></td>
+                                <td><span class="badge bg-success">-31.2%</span></td>
+                                <td><span class="badge bg-info">-32.5%</span></td>
+                                <td><span class="badge bg-primary">-29.8%</span></td>
+                                <td><strong class="text-success">94.1%</strong></td>
+                                <td><span class="badge bg-info">IN PROGRESS</span></td>
+                                <td><button class="btn btn-sm btn-outline-warning">VIEW</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Footer -->
+    <footer class="bg-research text-white py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-university"></i> EGERTON UNIVERSITY</h5>
+                    <p class="small">Faculty of Science<br>Department of Computer Science<br>Nakuru, Kenya</p>
+                </div>
+                <div class="col-md-4">
+                    <h5><i class="fas fa-user-graduate"></i> RESEARCHER</h5>
+                    <p class="small mb-1"><strong>Elisha Kidenge</strong></p>
+                    <p class="small mb-1">SM24/11854/24</p>
+                    <p class="small mb-1">MSc Computer Science</p>
+                    <p class="small">kidengee@students.egerton.ac.ke</p>
+                </div>
+                <div class="col-md-4">
+                    <h5><i class="fas fa-chalkboard-teacher"></i> SUPERVISION</h5>
+                    <p class="small mb-1"><strong>Dr. Zachary Bosire</strong> (Lead Supervisor)</p>
+                    <p class="small mb-1"><strong>Dr. Duke Oeba</strong> (Co-Supervisor)</p>
+                    <p class="small">AI & Machine Learning Research Unit</p>
+                </div>
+            </div>
+            <hr class="bg-light my-3">
+            <div class="text-center">
+                <p class="mb-0 small">© 2024 Egerton University - MSc Computer Science Thesis Research | AI Traffic Optimization Study</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // Export experiment function
+    function exportExperiment(experimentId) {
+        if (confirm('Export experiment data for analysis?')) {
+            // Show loading
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> EXPORTING...';
+            btn.disabled = true;
+            
+            // Simulate export process
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-check"></i> EXPORTED';
+                btn.className = 'btn btn-outline-success';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.className = 'btn btn-outline-info';
+                    alert('Experiment data exported successfully!');
+                }, 1500);
+            }, 2000);
+        }
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<style>
+    /* Custom Styles for Experiments Page */
+    .bg-university {
+        background: linear-gradient(135deg, #0a2e5c 0%, #1a5fb4 100%);
+    }
+    
+    .bg-research {
+        background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    }
+    
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .experiment-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .experiment-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    .experiment-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.25rem;
+    }
+    
+    .experiment-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .experiment-badge.completed {
+        background: #10b981;
+        color: white;
+    }
+    
+    .experiment-badge.running {
+        background: #f59e0b;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .experiment-badge.pending {
+        background: #6b7280;
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+    
+    .algorithm-badge {
+        padding: 8px 15px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .algorithm-badge.rl_optimized {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+    }
+    
+    .algorithm-badge.ga_optimized {
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        color: white;
+    }
+    
+    .algorithm-badge.hybrid {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+    }
+    
+    .algorithm-badge.baseline {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+    
+    .metric-box {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 15px;
+        border-left: 4px solid;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-box:hover {
+        background: #f1f5f9;
+        transform: translateY(-3px);
+    }
+    
+    .metric-box.loss {
+        border-left-color: #ef4444;
+    }
+    
+    .metric-box.accuracy {
+        border-left-color: #10b981;
+    }
+    
+    .metric-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 5px 0;
+    }
+    
+    .metric-trend {
+        font-size: 0.8rem;
+    }
+    
+    .progress-section {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .progress-bar {
+        border-radius: 5px;
+    }
+    
+    .experiment-info {
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .algorithm-table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .no-data-card {
+        border: 2px dashed #d1d5db;
+        background: #f9fafb;
+        border-radius: 15px;
+    }
+    
+    .empty-state-icon {
+        opacity: 0.5;
+    }
+    
+    .comparison-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .research-header-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #3b82f6;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+    
+    .btn-group .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .text-muted {
+        color: #64748b !important;
+    }
+</style>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Animation CSS -->
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .experiment-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .experiment-card:nth-child(2) { animation-delay: 0.1s; }
+    .experiment-card:nth-child(3) { animation-delay: 0.2s; }
+    .experiment-card:nth-child(4) { animation-delay: 0.3s; }
+    .experiment-card:nth-child(5) { animation-delay: 0.4s; }
+    .experiment-card:nth-child(6) { animation-delay: 0.5s; }
+</style>
+{% endblock %}
