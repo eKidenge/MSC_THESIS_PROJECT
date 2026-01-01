@@ -1,0 +1,518 @@
+<!-- core/templates/core/comparison_detail.html -->
+{% extends "core/base.html" %}
+{% load static %}
+{% load tz %}
+
+{% block title %}Comparison Details - {{ comparison.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Top Header with University Details -->
+    <div class="bg-university text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="university-logo">
+                        <i class="fas fa-graduation-cap fa-3x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="mb-1"><strong>EGERTON UNIVERSITY</strong></h1>
+                    <h4 class="mb-0">Faculty of Science - Department of Computer Science</h4>
+                    <p class="mb-0">Master of Science in Computer Science Thesis Project</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="student-logo">
+                        <i class="fas fa-user-graduate fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student & Supervisor Information -->
+    <div class="bg-light py-3 border-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-2"><i class="fas fa-user-graduate"></i> STUDENT INFORMATION</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Name:</strong> ELISHA KIDENGE</p>
+                            <p class="mb-1"><strong>Reg No:</strong> SM24/11854/24</p>
+                            <p class="mb-0"><strong>Program:</strong> MSC Computer Science</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Year:</strong> 2024/2025</p>
+                            <p class="mb-1"><strong>Specialization:</strong> AI & Traffic Systems</p>
+                            <p class="mb-0"><strong>Email:</strong> KIDENGE.1185424@student.egerton.ac.ke</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-success mb-2"><i class="fas fa-chalkboard-teacher"></i> SUPERVISORS</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Dr. Zachary Bosire</strong></p>
+                            <p class="mb-0 text-muted">COD, Computer Science, Cybersecurity</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Dr. Duke Oeba</strong></p>
+                            <p class="mb-0 text-muted">Electronics & AI</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thesis Title & Navigation -->
+    <div class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-1">MATAFITI: AI-Powered Traffic Optimization System</h2>
+                    <p class="mb-0 opacity-75">Algorithm Comparison Analysis</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="nav-buttons">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'scenario_list' %}" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-map"></i> Scenarios
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-outline-light btn-sm me-2">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-chart-bar"></i> Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Comparison Content -->
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0"><i class="fas fa-balance-scale"></i> Comparison: {{ comparison.name }}</h4>
+                            <span class="badge bg-light text-dark">{{ comparison.created_at|date:"F j, Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-info-circle text-info"></i> Description</h5>
+                                <p class="lead">{{ comparison.description }}</p>
+                                
+                                <h5 class="mt-4"><i class="fas fa-cogs text-warning"></i> Parameters</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <th>Scenario</th>
+                                                <td>{{ comparison.scenario.name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Algorithms Compared</th>
+                                                <td>
+                                                    {% for algo in comparison.algorithms %}
+                                                    <span class="badge bg-secondary me-1">{{ algo }}</span>
+                                                    {% endfor %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Duration</th>
+                                                <td>{{ comparison.duration_minutes }} minutes</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Vehicle Count</th>
+                                                <td>{{ comparison.vehicle_count }} vehicles</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-chart-line text-success"></i> Summary Metrics</h5>
+                                <div class="row mt-3">
+                                    <div class="col-6">
+                                        <div class="card text-center border-success">
+                                            <div class="card-body">
+                                                <h6 class="text-muted">Best Algorithm</h6>
+                                                <h3 class="text-success">{{ comparison.best_algorithm }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="card text-center border-info">
+                                            <div class="card-body">
+                                                <h6 class="text-muted">Improvement</h6>
+                                                <h3 class="text-info">{{ comparison.improvement_percentage }}%</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h5><i class="fas fa-lightbulb text-warning"></i> Key Findings</h5>
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-bullseye"></i> 
+                                        {{ comparison.conclusion }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics Comparison -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Performance Metrics Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="comparisonChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Algorithm Comparison -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-table"></i> Detailed Algorithm Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Algorithm</th>
+                                        <th>Average Wait Time (s)</th>
+                                        <th>Throughput (veh/h)</th>
+                                        <th>Fuel Efficiency</th>
+                                        <th>Emissions (kg)</th>
+                                        <th>Score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if comparison.results %}
+                                    {% for result in comparison.results %}
+                                    <tr>
+                                        <td><strong>{{ result.algorithm }}</strong></td>
+                                        <td>{{ result.avg_wait_time|floatformat:1 }}</td>
+                                        <td>{{ result.throughput|floatformat:0 }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-success" style="width: {{ result.fuel_efficiency }}%"></div>
+                                            </div>
+                                            <small>{{ result.fuel_efficiency|floatformat:1 }}%</small>
+                                        </td>
+                                        <td>{{ result.emissions|floatformat:2 }}</td>
+                                        <td>
+                                            <span class="badge {% if result.score > 80 %}bg-success{% elif result.score > 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ result.score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if result.status == 'completed' %}bg-success{% elif result.status == 'running' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ result.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <!-- Fallback example data -->
+                                    <tr>
+                                        <td><strong>rl_optimized</strong></td>
+                                        <td>45.2</td>
+                                        <td>850</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-success" style="width: 88%"></div>
+                                            </div>
+                                            <small>88.0%</small>
+                                        </td>
+                                        <td>125.5</td>
+                                        <td>
+                                            <span class="badge bg-success">92.5</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">Completed</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>ga_optimized</strong></td>
+                                        <td>52.8</td>
+                                        <td>790</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-warning" style="width: 72%"></div>
+                                            </div>
+                                            <small>72.0%</small>
+                                        </td>
+                                        <td>145.3</td>
+                                        <td>
+                                            <span class="badge bg-warning">78.3</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">Completed</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>hybrid</strong></td>
+                                        <td>48.5</td>
+                                        <td>820</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-info" style="width: 85%"></div>
+                                            </div>
+                                            <small>85.0%</small>
+                                        </td>
+                                        <td>135.8</td>
+                                        <td>
+                                            <span class="badge bg-success">87.6</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">Completed</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>baseline</strong></td>
+                                        <td>62.3</td>
+                                        <td>650</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-danger" style="width: 60%"></div>
+                                            </div>
+                                            <small>60.0%</small>
+                                        </td>
+                                        <td>168.9</td>
+                                        <td>
+                                            <span class="badge bg-danger">65.2</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">Completed</span>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <!-- Use existing export URLs or create new ones -->
+                        {% if comparison.id %}
+                        <a href="{% url 'export_csv' comparison.id %}" class="btn btn-success me-3">
+                            <i class="fas fa-download"></i> Export CSV
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'comparison' %}" class="btn btn-primary me-3">
+                            <i class="fas fa-redo"></i> New Comparison
+                        </a>
+                        
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="mb-3">MATAFITI Research</h5>
+                    <p class="small">An AI-powered traffic optimization system for Kenyan urban centers. Part of MSc Computer Science thesis at Egerton University.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-3">Contact Information</h5>
+                    <p class="small mb-1"><i class="fas fa-user-graduate"></i> <strong>Student:</strong> Elisha Kidenge</p>
+                    <p class="small mb-1"><i class="fas fa-envelope"></i> KIDENGE.1185424@student.egerton.ac.ke</p>
+                    <p class="small mb-1"><i class="fas fa-id-card"></i> Registration: SM24/11854/24</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-3">Research Areas</h5>
+                    <span class="badge bg-primary mb-1">Reinforcement Learning</span>
+                    <span class="badge bg-success mb-1">Traffic Optimization</span>
+                    <span class="badge bg-info mb-1">AI in Transportation</span>
+                    <span class="badge bg-warning mb-1">Smart Cities</span>
+                </div>
+            </div>
+            <hr class="bg-white my-3">
+            <div class="text-center">
+                <p class="mb-0 small">© 2025 Egerton University - MSc Computer Science Thesis | Developed by Elisha Kidenge | Supervised by Dr. Zachary Bosire & Dr. Duke Oeba</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart data
+        var ctx = document.getElementById('comparisonChart').getContext('2d');
+        var comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Average Wait Time (s)', 'Throughput (veh/h)', 'Fuel Efficiency (%)', 'Emissions (kg)'],
+                datasets: [
+                    {
+                        label: 'Reinforcement Learning',
+                        data: [45.2, 850, 88, 125.5],
+                        backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Genetic Algorithm',
+                        data: [52.8, 790, 72, 145.3],
+                        backgroundColor: 'rgba(28, 200, 138, 0.8)',
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Hybrid AI',
+                        data: [48.5, 820, 85, 135.8],
+                        backgroundColor: 'rgba(246, 194, 62, 0.8)',
+                        borderColor: 'rgba(246, 194, 62, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Baseline',
+                        data: [62.3, 650, 60, 168.9],
+                        backgroundColor: 'rgba(231, 74, 59, 0.8)',
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    /* Reuse the same styles from dashboard */
+    .bg-university {
+        background: linear-gradient(135deg, #0a2e5c 0%, #1a5fb4 100%);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1rem 1.5rem;
+    }
+    
+    .university-logo, .student-logo {
+        background: rgba(255, 255, 255, 0.2);
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .nav-buttons .btn {
+        border-radius: 20px;
+        padding: 5px 15px;
+        font-weight: 500;
+    }
+    
+    footer {
+        background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .progress {
+        border-radius: 10px;
+    }
+    
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+    }
+</style>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}

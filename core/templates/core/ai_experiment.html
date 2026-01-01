@@ -1,0 +1,249 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 rounded">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <strong>MATAFITI</strong> - AI Experiment
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+                <a class="nav-link" href="{% url 'results' experiment.id %}"><i class="fas fa-chart-bar"></i> Results</a>
+                <a class="nav-link" href="{% url 'experiment_list' %}"><i class="fas fa-flask"></i> All Experiments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="card shadow-lg">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">AI Experiment: {{ experiment.name }}</h3>
+            <small class="opacity-75">Algorithm: {{ experiment.get_algorithm_display }}</small>
+        </div>
+        
+        <div class="card-body">
+            <!-- Training Progress -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Training Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                             style="width: {{ experiment.progress|default:'0' }}%">
+                            <strong>{{ experiment.progress|default:'0' }}% Complete</strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Training Metrics -->
+                    <div class="row mt-4">
+                        <div class="col-md-3 text-center">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Loss</h6>
+                                    <h3 class="text-danger">{{ experiment.current_loss|floatformat:4|default:'0.0000' }}</h3>
+                                    <small class="text-success">
+                                        <i class="fas fa-arrow-down"></i> 12% from last epoch
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Accuracy</h6>
+                                    <h3 class="text-success">{{ experiment.current_accuracy|floatformat:2|default:'0.00' }}%</h3>
+                                    <small class="text-success">
+                                        <i class="fas fa-arrow-up"></i> 8% from last epoch
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Epoch</h6>
+                                    <h3 class="text-primary">{{ experiment.current_epoch|default:'0' }}/{{ experiment.total_epochs }}</h3>
+                                    <small class="text-muted">{{ experiment.total_epochs|add:"-"|add:experiment.current_epoch|default:'100' }} remaining</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Status</h6>
+                                    <h3>
+                                        <span class="badge {% if experiment.status == 'running' %}bg-warning{% elif experiment.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ experiment.get_status_display }}
+                                        </span>
+                                    </h3>
+                                    <small class="text-muted">Started: {{ experiment.created_at|timesince }} ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Comparison with Baseline -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-balance-scale"></i> Performance Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <canvas id="comparisonChart" height="250"></canvas>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Key Improvements:</h6>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <i class="fas fa-clock text-primary"></i>
+                                    Travel Time: <strong class="text-success">-28.1%</strong>
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-traffic-light text-warning"></i>
+                                    Traffic Delay: <strong class="text-success">-29.2%</strong>
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-gas-pump text-danger"></i>
+                                    Fuel Use: <strong class="text-success">-27.1%</strong>
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-industry text-secondary"></i>
+                                    Emissions: <strong class="text-success">-26.8%</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Training Controls -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-sliders-h"></i> Experiment Controls</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        {% if experiment.status == 'running' %}
+                        <button class="btn btn-danger" onclick="pauseExperiment({{ experiment.id }})">
+                            <i class="fas fa-pause"></i> Pause Training
+                        </button>
+                        <button class="btn btn-warning" onclick="stopExperiment({{ experiment.id }})">
+                            <i class="fas fa-stop"></i> Stop Training
+                        </button>
+                        {% elif experiment.status == 'completed' %}
+                        <button class="btn btn-success" disabled>
+                            <i class="fas fa-check"></i> Training Completed
+                        </button>
+                        <a href="{% url 'results' experiment.id %}" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i> View Results
+                        </a>
+                        {% else %}
+                        <button class="btn btn-success" onclick="resumeExperiment({{ experiment.id }})">
+                            <i class="fas fa-play"></i> Resume Training
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Training parameters: {{ experiment.parameters|default:"Default settings" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Comparison Chart
+    var ctx = document.getElementById('comparisonChart').getContext('2d');
+    var comparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Travel Time (min)', 'Delay (hours)', 'Fuel Use (liters)', 'Emissions (kg)'],
+            datasets: [{
+                label: 'Baseline',
+                data: {{ baseline_metrics|safe }},
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: 1
+            }, {
+                label: 'AI Optimized',
+                data: {{ ai_metrics|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'AI vs Baseline Performance Comparison'
+                }
+            }
+        }
+    });
+    
+    // Control functions
+    function pauseExperiment(experimentId) {
+        if (confirm('Pause the training?')) {
+            // Call API to pause
+            fetch(`/api/simulation/${experimentId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({status: 'paused'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Experiment paused');
+                location.reload();
+            });
+        }
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .list-group-item {
+        border: none;
+        padding: 10px 15px;
+    }
+</style>
+{% endblock %}

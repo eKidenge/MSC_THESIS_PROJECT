@@ -1,0 +1,809 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- University Research Header -->
+    <div class="bg-university text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="research-logo">
+                        <i class="fas fa-map fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h3 class="mb-1">EGERTON UNIVERSITY - TRAFFIC SCENARIO LIBRARY</h3>
+                    <p class="mb-0 opacity-75">Department of Computer Science | Traffic Simulation Scenario Database</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="student-logo">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Navigation -->
+    <div class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-0"><i class="fas fa-map-marked-alt"></i> TRAFFIC SCENARIO LIBRARY</h4>
+                    <small class="opacity-75">Comprehensive collection of traffic conditions for AI research</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'create_scenario' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus"></i> Create Scenario
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-chart-bar"></i> Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Library Statistics -->
+        <div class="card library-stats-card mb-4">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-primary">{{ total_scenarios|default:"0" }}</h3>
+                        <p class="mb-0 text-muted">TOTAL SCENARIOS</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-success">{{ active_scenarios|default:"0" }}</h3>
+                        <p class="mb-0 text-muted">ACTIVE SCENARIOS</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-warning">{{ city_locations|default:"4" }}</h3>
+                        <p class="mb-0 text-muted">CITY LOCATIONS</p>
+                    </div>
+                    <div class="col-md-3">
+                        {% if scenario_stats %}
+                            {% with scenario_stats|first as first_stat %}
+                                <h3 class="mb-1 text-info">{{ first_stat.total_simulations|default:"0" }}</h3>
+                            {% endwith %}
+                        {% else %}
+                            <h3 class="mb-1 text-info">0</h3>
+                        {% endif %}
+                        <p class="mb-0 text-muted">AVG SIMULATIONS</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenarios Header -->
+        <div class="card scenarios-header-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2"><i class="fas fa-city"></i> TRAFFIC SIMULATION SCENARIOS</h1>
+                        <p class="mb-0 text-muted">
+                            Research Database | Researcher: Elisha Kidenge (SM24/11854/24) | 
+                            Supervised by Dr. Zachary Bosire & Dr. Duke Oeba
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'create_scenario' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus-circle"></i> CREATE NEW SCENARIO
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenarios Grid -->
+        <div class="row">
+            {% if scenario_stats %}
+                {% for stat in scenario_stats %}
+                {% with scenario=stat.scenario %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card scenario-card h-100">
+                        <div class="card-header scenario-card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">
+                                        <i class="fas fa-map-pin"></i> {{ scenario.name }}
+                                    </h5>
+                                    <div class="scenario-meta">
+                                        <span class="scenario-type {{ scenario.scenario_type }}">
+                                            <i class="fas fa-tag"></i> {{ scenario.get_scenario_type_display }}
+                                        </span>
+                                        <span class="scenario-status {% if scenario.is_active %}active{% else %}inactive{% endif %}">
+                                            <i class="fas fa-circle"></i> 
+                                            {% if scenario.is_active %}ACTIVE{% else %}INACTIVE{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="scenario-actions">
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="quickRunScenario({{ scenario.id }})">
+                                        <i class="fas fa-play"></i> RUN
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Scenario Description -->
+                            <div class="scenario-description mb-3">
+                                <p class="mb-2">{{ scenario.description|default:"No description provided for this scenario." }}</p>
+                            </div>
+                            
+                            <!-- Key Parameters -->
+                            <div class="scenario-parameters mb-4">
+                                <h6 class="section-title mb-3">
+                                    <i class="fas fa-sliders-h"></i> KEY PARAMETERS
+                                </h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="parameter-item">
+                                            <small class="text-muted">Duration</small>
+                                            <div class="parameter-value">
+                                                <i class="fas fa-clock"></i> 
+                                                {% if scenario.parameters.duration %}
+                                                    {% if scenario.parameters.duration >= 3600 %}
+                                                        {{ scenario.parameters.duration|floatformat:"0" }} seconds ({{ scenario.parameters.duration|divisibleby:3600|floatformat:"1" }} hours)
+                                                    {% else %}
+                                                        {{ scenario.parameters.duration|floatformat:"0" }} seconds
+                                                    {% endif %}
+                                                {% else %}
+                                                    3600 seconds (1 hour)
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="parameter-item">
+                                            <small class="text-muted">Vehicle Count</small>
+                                            <div class="parameter-value">
+                                                <i class="fas fa-car"></i> 
+                                                {{ scenario.parameters.vehicle_count|default:"1000" }} vehicles
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="parameter-item">
+                                            <small class="text-muted">Intersections</small>
+                                            <div class="parameter-value">
+                                                <i class="fas fa-road"></i> 
+                                                {{ scenario.parameters.intersections|default:"20" }} nodes
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="parameter-item">
+                                            <small class="text-muted">Peak Hour</small>
+                                            <div class="parameter-value">
+                                                <i class="fas fa-traffic-light"></i> 
+                                                {% if scenario.parameters.peak_hour == True or scenario.parameters.peak_hour == "true" %}
+                                                    Yes
+                                                {% else %}
+                                                    No
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Simulation Statistics -->
+                            <div class="scenario-stats mb-4">
+                                <h6 class="section-title mb-3">
+                                    <i class="fas fa-chart-bar"></i> SIMULATION STATISTICS
+                                </h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="stat-item">
+                                            <small class="text-muted">Total Simulations</small>
+                                            <div class="stat-value text-primary">
+                                                <i class="fas fa-play-circle"></i> {{ stat.total_simulations }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="stat-item">
+                                            <small class="text-muted">Completed</small>
+                                            <div class="stat-value text-success">
+                                                <i class="fas fa-check-circle"></i> {{ stat.completed_simulations }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Advanced Parameters -->
+                            <div class="scenario-advanced mb-3">
+                                <button class="btn btn-sm btn-outline-info w-100" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#advancedParams{{ scenario.id }}">
+                                    <i class="fas fa-code"></i> View Advanced Parameters
+                                </button>
+                                <div class="collapse mt-3" id="advancedParams{{ scenario.id }}">
+                                    <div class="advanced-params">
+                                        {% if scenario.parameters %}
+                                            <pre class="bg-dark text-light p-3 rounded">{{ scenario.parameters|pprint }}</pre>
+                                        {% else %}
+                                            <pre class="bg-dark text-light p-3 rounded">No advanced parameters set</pre>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Footer Info -->
+                            <div class="scenario-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="creation-info">
+                                        <small class="text-muted">
+                                            <i class="far fa-calendar"></i> Created: {{ scenario.created_at|date:"M d, Y" }}
+                                            {% if scenario.created_by %}
+                                            <br><i class="fas fa-user"></i> By: {{ scenario.created_by.username }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    <div class="usage-stats">
+                                        <small class="text-muted">
+                                            <i class="fas fa-chart-line"></i> Used in {{ stat.total_simulations }} simulation{{ stat.total_simulations|pluralize }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-outline-success" onclick="quickRunScenario({{ scenario.id }})">
+                                    <i class="fas fa-play-circle"></i> QUICK RUN
+                                </button>
+                                <button class="btn btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#scenarioModal{{ scenario.id }}">
+                                    <i class="fas fa-eye"></i> DETAILS
+                                </button>
+                                <button class="btn btn-outline-warning" onclick="alert('Edit feature coming soon')">
+                                    <i class="fas fa-edit"></i> EDIT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario Modal -->
+                <div class="modal fade" id="scenarioModal{{ scenario.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-gradient-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-info-circle"></i> {{ scenario.name }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6>Description</h6>
+                                        <p>{{ scenario.description|default:"No description provided." }}</p>
+                                        
+                                        <h6 class="mt-4">Detailed Parameters</h6>
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Scenario Type:</strong></td>
+                                                    <td>{{ scenario.get_scenario_type_display }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Duration:</strong></td>
+                                                    <td>
+                                                        {% if scenario.parameters.duration %}
+                                                            {{ scenario.parameters.duration }} seconds 
+                                                            ({{ scenario.parameters.duration|divisibleby:3600|floatformat:1 }} hours)
+                                                        {% else %}
+                                                            3600 seconds (1 hour)
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Vehicle Count:</strong></td>
+                                                    <td>{{ scenario.parameters.vehicle_count|default:"1000" }} vehicles</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Intersections:</strong></td>
+                                                    <td>{{ scenario.parameters.intersections|default:"20" }} nodes</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Peak Hour:</strong></td>
+                                                    <td>
+                                                        {% if scenario.parameters.peak_hour == True or scenario.parameters.peak_hour == "true" %}
+                                                            Yes
+                                                        {% else %}
+                                                            No
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                        <h6 class="mt-4">Research Applications</h6>
+                                        <ul>
+                                            <li>Testing Reinforcement Learning algorithms</li>
+                                            <li>Comparing AI optimization techniques</li>
+                                            <li>Urban traffic pattern analysis</li>
+                                            <li>Environmental impact studies</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6>Simulation Statistics</h6>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Total Simulations:</small>
+                                                    <div class="fw-bold text-primary">{{ stat.total_simulations }}</div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Completed:</small>
+                                                    <div class="fw-bold text-success">{{ stat.completed_simulations }}</div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Status:</small>
+                                                    <div>
+                                                        <span class="badge {% if scenario.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                                            {% if scenario.is_active %}Active{% else %}Inactive{% endif %}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Created:</small>
+                                                    <div class="fw-bold">{{ scenario.created_at|date:"M d, Y H:i" }}</div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Last Updated:</small>
+                                                    <div class="fw-bold">{{ scenario.updated_at|date:"M d, Y H:i" }}</div>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted">Researcher:</small>
+                                                    <div class="fw-bold">{{ scenario.created_by.username|default:"Elisha Kidenge" }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="quickRunScenario({{ scenario.id }})">
+                                    <i class="fas fa-play"></i> Run This Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            {% else %}
+            <!-- Empty State -->
+            <div class="col-12">
+                <div class="card empty-scenarios-card text-center py-5">
+                    <div class="card-body">
+                        <div class="empty-state-icon mb-4">
+                            <i class="fas fa-map-marked-alt fa-5x text-muted"></i>
+                        </div>
+                        <h3 class="mb-3">No Traffic Scenarios Found</h3>
+                        <p class="text-muted mb-4">
+                            Scenarios define the traffic conditions for your AI experiments. 
+                            Create different scenarios to test algorithms under various conditions.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'create_scenario' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus-circle"></i> CREATE FIRST SCENARIO
+                            </a>
+                            <button class="btn btn-outline-secondary btn-lg" onclick="alert('Sample scenarios feature coming soon')">
+                                <i class="fas fa-download"></i> LOAD SAMPLES
+                            </button>
+                        </div>
+                        <div class="mt-4">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="sample-card">
+                                        <i class="fas fa-city fa-2x text-primary mb-2"></i>
+                                        <h6>Urban Peak Hour</h6>
+                                        <small class="text-muted">City center rush hour traffic</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="sample-card">
+                                        <i class="fas fa-umbrella-beach fa-2x text-success mb-2"></i>
+                                        <h6>Coastal Traffic</h6>
+                                        <small class="text-muted">Tourist and local mixed traffic</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="sample-card">
+                                        <i class="fas fa-cloud-rain fa-2x text-info mb-2"></i>
+                                        <h6>Rainy Conditions</h6>
+                                        <small class="text-muted">Adverse weather traffic patterns</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Research Applications Section -->
+        <div class="card research-applications-card mt-4">
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="mb-0"><i class="fas fa-microscope"></i> RESEARCH APPLICATIONS</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="application-item text-center">
+                            <div class="application-icon mb-3">
+                                <i class="fas fa-robot fa-2x text-primary"></i>
+                            </div>
+                            <h6>AI Algorithm Testing</h6>
+                            <p class="small text-muted">Test different AI algorithms under controlled traffic conditions</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="application-item text-center">
+                            <div class="application-icon mb-3">
+                                <i class="fas fa-chart-line fa-2x text-success"></i>
+                            </div>
+                            <h6>Performance Analysis</h6>
+                            <p class="small text-muted">Compare algorithm performance across different scenarios</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="application-item text-center">
+                            <div class="application-icon mb-3">
+                                <i class="fas fa-leaf fa-2x text-info"></i>
+                            </div>
+                            <h6>Environmental Impact</h6>
+                            <p class="small text-muted">Study emissions reduction through traffic optimization</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="application-item text-center">
+                            <div class="application-icon mb-3">
+                                <i class="fas fa-university fa-2x text-warning"></i>
+                            </div>
+                            <h6>Academic Research</h6>
+                            <p class="small text-muted">Support MSc thesis and academic publications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Footer -->
+    <footer class="bg-research-footer text-white py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-university"></i> EGERTON UNIVERSITY</h5>
+                    <p class="small">Faculty of Science<br>Department of Computer Science<br>Nakuru, Kenya</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5><i class="fas fa-user-graduate"></i> RESEARCH DATABASE</h5>
+                    <p class="small mb-1">Traffic Scenario Library</p>
+                    <p class="small mb-1">Total Scenarios: {{ total_scenarios|default:"0" }}</p>
+                    <p class="small">Generated: {% now "F d, Y, H:i" %}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5><i class="fas fa-chalkboard-teacher"></i> ACADEMIC SUPERVISION</h5>
+                    <p class="small mb-1"><strong>Dr. Zachary Bosire</strong> (Lead Supervisor)</p>
+                    <p class="small mb-1"><strong>Dr. Duke Oeba</strong> (Co-Supervisor)</p>
+                    <p class="small">AI & Transportation Research Unit</p>
+                </div>
+            </div>
+            <hr class="bg-light my-3">
+            <div class="text-center">
+                <p class="mb-0 small">
+                    <i class="fas fa-graduation-cap"></i> 
+                    © 2024 Egerton University - MSc Computer Science Thesis | 
+                    Researcher: Elisha Kidenge (SM24/11854/24) | 
+                    Study: AI-Powered Traffic Optimization in Kenyan Urban Centers
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // Scenario functions
+    function quickRunScenario(scenarioId) {
+        if (confirm('Run simulation with this scenario?')) {
+            // Set scenario in dashboard form and redirect
+            localStorage.setItem('selectedScenario', scenarioId);
+            window.location.href = "{% url 'dashboard' %}";
+        }
+    }
+    
+    // Initialize scenario selection on dashboard load
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedScenario = localStorage.getItem('selectedScenario');
+        if (selectedScenario && window.location.pathname === '/') {
+            const scenarioSelect = document.querySelector('select[name="scenario"]');
+            if (scenarioSelect) {
+                scenarioSelect.value = selectedScenario;
+                localStorage.removeItem('selectedScenario');
+            }
+        }
+    });
+</script>
+
+<style>
+    /* Custom Styles for Scenario List */
+    .bg-university {
+        background: linear-gradient(135deg, #0a2e5c 0%, #1a5fb4 100%);
+    }
+    
+    .bg-research-footer {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+    
+    .research-logo, .student-logo {
+        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .library-stats-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #3b82f6;
+    }
+    
+    .scenarios-header-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #10b981;
+    }
+    
+    .scenario-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .scenario-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    .scenario-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.25rem;
+    }
+    
+    .scenario-meta {
+        display: flex;
+        gap: 10px;
+        margin-top: 5px;
+    }
+    
+    .scenario-type, .scenario-status {
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .scenario-type.nairobi_peak { background: #3b82f6; color: white; }
+    .scenario-type.nakuru_central { background: #10b981; color: white; }
+    .scenario-type.mombasa_coastal { background: #8b5cf6; color: white; }
+    .scenario-type.kisumu_lakeside { background: #f59e0b; color: white; }
+    .scenario-type.baseline { background: #6b7280; color: white; }
+    .scenario-type.custom { background: #8b5cf6; color: white; }
+    
+    .scenario-status.active { background: #10b981; color: white; }
+    .scenario-status.inactive { background: #6b7280; color: white; }
+    
+    .scenario-actions .btn {
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .section-title {
+        color: #1e293b;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .parameter-item, .stat-item {
+        padding: 10px;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        height: 100%;
+    }
+    
+    .parameter-value, .stat-value {
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 3px;
+    }
+    
+    .stat-value.text-primary { color: #3b82f6; }
+    .stat-value.text-success { color: #10b981; }
+    
+    .advanced-params pre {
+        font-size: 0.8rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .scenario-footer {
+        padding-top: 15px;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 15px;
+    }
+    
+    .btn-group .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .empty-scenarios-card {
+        border: 2px dashed #d1d5db;
+        background: #f9fafb;
+        border-radius: 15px;
+    }
+    
+    .empty-state-icon {
+        opacity: 0.5;
+    }
+    
+    .sample-card {
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .sample-card:hover {
+        background: #f1f5f9;
+        transform: translateY(-5px);
+    }
+    
+    .research-applications-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .application-item {
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 10px;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .application-item:hover {
+        background: #f1f5f9;
+        transform: translateY(-5px);
+    }
+    
+    .application-icon {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .text-muted {
+        color: #64748b !important;
+    }
+    
+    table.table-sm td {
+        padding: 0.5rem;
+    }
+</style>
+
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Animation -->
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .library-stats-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .scenarios-header-card {
+        animation: fadeIn 0.6s ease-out 0.1s both;
+    }
+    
+    .scenario-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .scenario-card:nth-child(2) { animation-delay: 0.1s; }
+    .scenario-card:nth-child(3) { animation-delay: 0.2s; }
+    .scenario-card:nth-child(4) { animation-delay: 0.3s; }
+    .scenario-card:nth-child(5) { animation-delay: 0.4s; }
+    .scenario-card:nth-child(6) { animation-delay: 0.5s; }
+    
+    .empty-scenarios-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .research-applications-card {
+        animation: fadeIn 0.6s ease-out 0.6s both;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,523 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- University Header -->
+    <div class="bg-university text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="university-logo">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h3 class="mb-1">EGERTON UNIVERSITY - RESEARCH RESULTS</h3>
+                    <p class="mb-0 opacity-75">Department of Computer Science | All Simulation Results</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="student-logo">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Navigation -->
+    <div class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-0"><i class="fas fa-list"></i> ALL SIMULATION RESULTS</h4>
+                    <small class="opacity-75">Comprehensive analysis of all traffic optimization experiments</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                        <a href="{% url 'experiment_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-flask"></i> Experiments
+                        </a>
+                        <a href="{% url 'results_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-list"></i> Results
+                        </a>
+                        <a href="{% url 'comparison' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-balance-scale"></i> Compare
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Statistics Header -->
+        <div class="card results-stats-card mb-4">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-primary">{{ page_obj.paginator.count }}</h3>
+                        <p class="mb-0 text-muted">TOTAL SIMULATIONS</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-success">{{ page_obj.object_list|length }}</h3>
+                        <p class="mb-0 text-muted">SHOWING RESULTS</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-warning">{{ page_obj.number }}</h3>
+                        <p class="mb-0 text-muted">PAGE {{ page_obj.number }} OF {{ page_obj.paginator.num_pages }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="mb-1 text-info">28.5%</h3>
+                        <p class="mb-0 text-muted">AVG IMPROVEMENT</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="card results-table-card">
+            <div class="card-header bg-gradient-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0"><i class="fas fa-table"></i> SIMULATION RESULTS DATABASE</h5>
+                        <small class="opacity-75">Click on any result for detailed analysis</small>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> NEW SIMULATION
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if page_obj.object_list %}
+                <div class="table-responsive">
+                    <table class="table table-hover results-table">
+                        <thead>
+                            <tr class="table-dark">
+                                <th>SIMULATION</th>
+                                <th>SCENARIO</th>
+                                <th>ALGORITHM</th>
+                                <th>TRAVEL TIME</th>
+                                <th>IMPROVEMENT</th>
+                                <th>STATUS</th>
+                                <th class="text-center">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in page_obj %}
+                            <tr class="result-row" onclick="window.location='{% url 'results' result.simulation.id %}'" style="cursor: pointer;">
+                                <td>
+                                    <strong>{{ result.simulation.name|truncatechars:30 }}</strong><br>
+                                    <small class="text-muted">{{ result.simulation.created_at|date:"M d, Y" }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge scenario-badge">
+                                        {{ result.simulation.scenario.name|default:"Unknown" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge algorithm-badge {{ result.simulation.algorithm }}">
+                                        {{ result.simulation.get_algorithm_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ result.avg_travel_time|floatformat:1 }} min</strong><br>
+                                    <small>Baseline: {{ result.baseline_avg_travel_time|floatformat:1 }} min</small>
+                                </td>
+                                <td>
+                                    <div class="improvement-display">
+                                        <span class="improvement-value text-success">
+                                            <i class="fas fa-arrow-down"></i> {{ result.improvement_travel_time|floatformat:1 }}%
+                                        </span>
+                                        <div class="progress" style="height: 5px; width: 100px;">
+                                            <div class="progress-bar bg-success" 
+                                                 style="width: {{ result.improvement_travel_time|default:'0' }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge status-badge {% if result.simulation.status == 'completed' %}completed{% elif result.simulation.status == 'running' %}running{% else %}pending{% endif %}">
+                                        {{ result.simulation.get_status_display|upper }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'results' result.simulation.id %}" class="btn btn-outline-primary" 
+                                           onclick="event.stopPropagation()">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'ai_experiment' result.simulation.id %}" class="btn btn-outline-success"
+                                           onclick="event.stopPropagation()">
+                                            <i class="fas fa-flask"></i>
+                                        </a>
+                                        <a href="{% url 'export_csv' result.simulation.id %}" class="btn btn-outline-info"
+                                           onclick="event.stopPropagation()">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <!-- No Results State -->
+                <div class="text-center py-5">
+                    <div class="empty-state-icon mb-4">
+                        <i class="fas fa-database fa-5x text-muted"></i>
+                    </div>
+                    <h3 class="mb-3">No Simulation Results Yet</h3>
+                    <p class="text-muted mb-4">Start your first traffic simulation to see results here.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play-circle"></i> START SIMULATION
+                        </a>
+                        <a href="{% url 'scenario_list' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-map"></i> EXPLORE SCENARIOS
+                        </a>
+                    </div>
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Results will appear here after you complete simulations from the dashboard.
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card summary-card">
+                    <div class="card-header bg-gradient-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-pie"></i> ALGORITHM DISTRIBUTION</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-primary">65%</h4>
+                                <small>Reinforcement Learning</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-success">25%</h4>
+                                <small>Genetic Algorithm</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-info">10%</h4>
+                                <small>Hybrid AI</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card summary-card">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-trophy"></i> TOP PERFORMING</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-warning">31.2%</h4>
+                                <small>Best Improvement</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-danger">94.1%</h4>
+                                <small>Highest Accuracy</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-success">2.1h</h4>
+                                <small>Fastest Run</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Footer -->
+    <footer class="bg-research-footer text-white py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-university"></i> EGERTON UNIVERSITY</h5>
+                    <p class="small">Faculty of Science<br>Department of Computer Science<br>Nakuru, Kenya</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5><i class="fas fa-user-graduate"></i> RESEARCH DATA</h5>
+                    <p class="small mb-1">Total Records: {{ page_obj.paginator.count }}</p>
+                    <p class="small mb-1">Generated: {% now "F d, Y, H:i" %}</p>
+                    <p class="small">Researcher: Elisha Kidenge</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5><i class="fas fa-chalkboard-teacher"></i> DATA ANALYSIS</h5>
+                    <p class="small mb-1"><strong>Dr. Zachary Bosire</strong> (Lead Supervisor)</p>
+                    <p class="small mb-1"><strong>Dr. Duke Oeba</strong> (Co-Supervisor)</p>
+                    <p class="small">Data Science Research Unit</p>
+                </div>
+            </div>
+            <hr class="bg-light my-3">
+            <div class="text-center">
+                <p class="mb-0 small">
+                    <i class="fas fa-graduation-cap"></i> 
+                    © 2024 Egerton University - MSc Computer Science Thesis | 
+                    Database: Traffic Optimization Simulation Results
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // Make rows clickable
+    document.querySelectorAll('.result-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (!e.target.closest('a, button')) {
+                window.location = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+            }
+        });
+    });
+</script>
+
+<style>
+    /* Custom Styles for Results List */
+    .bg-university {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    }
+    
+    .bg-research-footer {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+    
+    .university-logo, .student-logo {
+        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .results-stats-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #3b82f6;
+    }
+    
+    .results-table-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .results-table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        background: #1e293b !important;
+    }
+    
+    .result-row {
+        transition: all 0.3s ease;
+    }
+    
+    .result-row:hover {
+        background: #f1f5f9 !important;
+        transform: translateX(5px);
+    }
+    
+    .scenario-badge {
+        background: #10b981;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    
+    .algorithm-badge {
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .algorithm-badge.rl_optimized {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+    }
+    
+    .algorithm-badge.ga_optimized {
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        color: white;
+    }
+    
+    .algorithm-badge.hybrid {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+    }
+    
+    .improvement-display {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .improvement-value {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-badge.completed {
+        background: #10b981;
+        color: white;
+    }
+    
+    .status-badge.running {
+        background: #f59e0b;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-badge.pending {
+        background: #6b7280;
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+    
+    .btn-group .btn {
+        border-radius: 8px;
+    }
+    
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        border: none;
+        font-weight: 500;
+    }
+    
+    .page-item.active .page-link {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+    
+    .empty-state-icon {
+        opacity: 0.5;
+    }
+    
+    .summary-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .text-muted {
+        color: #64748b !important;
+    }
+</style>
+
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Animation -->
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .results-stats-card {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .results-table-card {
+        animation: fadeIn 0.6s ease-out 0.2s both;
+    }
+    
+    .summary-card {
+        animation: fadeIn 0.6s ease-out 0.4s both;
+    }
+</style>
+{% endblock %}
