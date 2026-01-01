@@ -169,7 +169,7 @@ def dashboard_view(request):
     }
     return render(request, 'core/dashboard.html', context)
 
-@login_required
+# @login_required
 def start_simulation_view(request):
     """Start a new simulation"""
     if request.method == 'POST':
@@ -468,7 +468,7 @@ def scenario_list_view(request):
     return render(request, 'core/scenario_list.html', context)
 
 # JUST ADDED TO EDIT SCENERIOS
-@login_required
+#@login_required
 def edit_scenario_view(request, scenario_id):
     """Edit an existing scenario"""
     scenario = get_object_or_404(Scenario, id=scenario_id)
