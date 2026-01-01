@@ -775,3 +775,20 @@ def api_active_simulations(request):
         })
     
     return JsonResponse(simulations_data, safe=False)
+
+# TO ADD ADMIN
+from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.contrib.auth.hashers import make_password
+
+def create_admin_user(request):
+    # Create superuser (only run once!)
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@msc_thesis.com',
+            password='admin123'
+        )
+        return HttpResponse("Admin user created!")
+    else:
+        return HttpResponse("Admin user already exists!")
