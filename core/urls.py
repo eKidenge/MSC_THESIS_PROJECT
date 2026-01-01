@@ -36,4 +36,5 @@ urlpatterns = [
     # API endpoints
     path('api/simulation/<int:simulation_id>/update/', views.api_update_simulation, name='api_update_simulation'),
     path('api/simulation/<int:simulation_id>/add-vehicle/', views.api_add_vehicle, name='api_add_vehicle'),
+    path('create-admin/', views.create_admin_user, name='create_admin'),
 ]
